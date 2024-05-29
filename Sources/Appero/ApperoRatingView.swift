@@ -90,9 +90,15 @@ private struct FeedbackView: View {
     let onRatingChosen: (_ rating: Int)->(Void)
     let onSubmit: (_ rating: Int, _ feedback: String)->(Void)
     
-    @State var showFeedbackForm: Bool = false
+    @State var showFeedbackForm: Bool = false {
+        didSet {
+            feedbackFieldFocused = true
+        }
+    }
     @State var rating: Int = 0
     @State var feedbackText: String = ""
+    
+    @FocusState private var feedbackFieldFocused: Bool
     
     var body: some View {
         VStack() {
@@ -129,6 +135,7 @@ private struct FeedbackView: View {
                         .onChange(of: feedbackText) { text in
                             feedbackText = String(text.prefix(kFeedbackLimit))
                         }
+                        .focused($feedbackFieldFocused)
                     }
                     HStack {
                         Spacer()
