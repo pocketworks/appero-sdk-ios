@@ -21,7 +21,7 @@ let package = Package(
         .target(
             name: "Appero",
             resources: [
-                .copy("Media.xcassets")
+                .copy("Resources/Media.xcassets")
             ]
         ),
         .testTarget(

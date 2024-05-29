@@ -20,7 +20,6 @@ class ViewController: UIViewController {
         
         themePicker.selectedSegmentIndex = 0
     }
-
     
     @IBAction func changeTheme(sender: Any?) {
         switch themePicker.selectedSegmentIndex {
@@ -41,7 +40,7 @@ class ViewController: UIViewController {
     }
     
     func openAppero() {
-        let apperoRatingView = ApperoPresentationView {
+        let apperoRatingView = ApperoPresentationView(productName: "ApperoExampleUIKit") {
             // remove the child view controller when the panel is dismissed
             self.hostingController?.willMove(toParent: nil)
             self.hostingController?.view.removeFromSuperview()
@@ -60,22 +59,6 @@ class ViewController: UIViewController {
             hostingController.view.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
             hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
             hostingController.didMove(toParent: self)
-        }
-    }
-}
-
-struct ApperoPresentationView: View {
-    
-    let onDismiss: (()->())?
-     
-    @State var presented = true
-    
-    var body: some View {
-        EmptyView()
-        .sheet(isPresented: $presented, onDismiss: {
-            onDismiss?()
-        }) {
-            ApperoRatingView(productName: "ApperoExampleUIKit")
         }
     }
 }

@@ -224,6 +224,26 @@ private struct RatingView: View {
     }
 }
 
+/// Supports showing the Appero the panel from UIKit in a hosting controller.
+@available(iOS 16, *)
+public struct ApperoPresentationView: View {
+    
+    let productName: String
+    let onDismiss: (()->())?
+     
+    @State var presented = true
+    
+    public var body: some View {
+        EmptyView()
+        .sheet(isPresented: $presented, onDismiss: {
+            onDismiss?()
+        }) {
+            ApperoRatingView(productName: productName)
+        }
+    }
+}
+
+
 private struct ThanksView: View {
     
     let productName: String
