@@ -360,7 +360,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pocketworks/appero-sdk-ios";
 			requirement = {
-				branch = develop;
+				branch = main;
 				kind = branch;
 			};
 		};
