@@ -78,6 +78,32 @@ struct ContentView: View {
 
 Use the property `shouldShowAppero` to determine whether or not to prompt should be shown based on the experience score and whether feedback has already been submitted.
 
+For UIKit based apps we leverage Apple's `UIHostingController` with the helper container view `ApperoPresentationView` which we can present as a child view controller over the top of whatever view controller you have displayed. Define the `UIHostingController<ApperoPresentationView>` as an instance var on your view controller.
+
+```
+let apperoRatingView = ApperoPresentationView(productName: "Your Product Name") {
+    // remove the child view controller when the panel is dismissed
+    self.hostingController?.willMove(toParent: nil)
+    self.hostingController?.view.removeFromSuperview()
+    self.hostingController?.removeFromParent()
+}
+
+hostingController = UIHostingController(rootView: apperoRatingView)
+hostingController?.view.translatesAutoresizingMaskIntoConstraints = false
+
+if let hostingController = hostingController {
+    hostingController.view.backgroundColor = .clear
+    addChild(hostingController)
+    view.addSubview(hostingController.view)
+    hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+    hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+    hostingController.view.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+    hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+    hostingController.didMove(toParent: self)
+}
+```
+
+
 ## Basic Themeing of the UI
 
 Appero by default uses the standard iOS system colours and responds to changes to the appearance as the rest of the system dose, supporting light and dark mode. Appero also comes supplied with a light and dark theme, these both have a fixed colour palette that doesn't change in response to system appearance changes.
