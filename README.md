@@ -41,9 +41,25 @@ Task {
 }
 ```
 
+## Monitoring User Experience
+
+One of the core ideas in Appero is that we're tracking positive and negative user interactions to build an experience score. Once this score crosses a threshold we've defined, we want to prompt the user to give us their feedback, be it positive or constructive. We provide two mechanisms to track this experience, either using `log(experience: Experience)` or `log(points: Int)`. Logging points as an integrer allows you to define your own scale, or you can use our Experience enum that defines a Likert scale from very positive to very negative. The threshold value can set using the property `ratingThreshold`.
+
+```
+Appero.instance.log(experience: .strongPositive)
+```
+
+When adding Appero to a flow in your app, consider each point where the user can have a positive experience, a neutral one or a negative one and work out a threshold score that makes sense for it overall.
+
+At some point you may wish to reset the users experience points and reprompt them for feedback. This should be done cautiously, we recommend recording and check a date value of when the user was last prompted.
+
+```
+Appero.instance.resetExperienceAndPrompt()
+```
+
 ## Triggering the Appero Feedback UI
 
-Appero is built using SwiftUI and is very easy to integrate into your app, even if you're using UIKit. To integrate with SwiftUI use the .sheet property on a view in your app's view hierarchy. The UI can then be triggered using a state variable based on your user's mood point value or in response to direct interaction (e.g a button).
+Appero is built using SwiftUI and is very easy to integrate into your app, even if you're using UIKit. To integrate with SwiftUI use the .sheet property on a view in your app's view hierarchy. The UI can then be triggered using a state variable based on your user's experience point value or in response to direct interaction (e.g a button).
 
 ```
 struct ContentView: View {
@@ -60,13 +76,17 @@ struct ContentView: View {
 }
 ```
 
+Use the property `shouldShowAppero` to determine whether or not to prompt should be shown based on the experience score and whether feedback has already been submitted.
+
 ## Basic Themeing of the UI
 
 Appero by default uses the standard iOS system colours and responds to changes to the appearance as the rest of the system dose, supporting light and dark mode. Appero also comes supplied with a light and dark theme, these both have a fixed colour palette that doesn't change in response to system appearance changes.
 
 You will likely wish to create your own theme so the Appero UI respects your app's branding. This is done by adopting the `ApperoTheme` protocol on your custom theme struct which defines the colours you need to provide. The theme can then by applied by setting the theme property on the Appero instance as below.
 
-```Appero.instance.theme = DarkTheme()```
+```
+Appero.instance.theme = DarkTheme()
+```
 
 ## Handling User Sessions
 
