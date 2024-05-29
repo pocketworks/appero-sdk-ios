@@ -238,6 +238,11 @@ public struct ApperoPresentationView: View {
      
     @State var presented = true
     
+    public init(productName: String, onDismiss: (() -> ())?) {
+        self.productName = productName
+        self.onDismiss = onDismiss
+    }
+    
     public var body: some View {
         EmptyView()
         .sheet(isPresented: $presented, onDismiss: {
