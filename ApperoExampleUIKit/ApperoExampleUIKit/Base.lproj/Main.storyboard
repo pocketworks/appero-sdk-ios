@@ -17,11 +17,11 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qfi-xE-bSi">
-                                <rect key="frame" x="133.66666666666666" y="440.33333333333331" width="125.99999999999997" height="35"/>
+                                <rect key="frame" x="83.666666666666686" y="440.33333333333331" width="226" height="35"/>
                                 <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Open Appero"/>
+                                <buttonConfiguration key="configuration" style="plain" title="Tap here for Positive Vibes"/>
                                 <connections>
-                                    <action selector="openApperoWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Tga-U7-ELQ"/>
+                                    <action selector="positiveVibesWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="bko-Bx-wWf"/>
                                 </connections>
                             </button>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="star.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="bS8-bW-QuA">
