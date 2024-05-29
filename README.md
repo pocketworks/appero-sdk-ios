@@ -90,7 +90,7 @@ Appero.instance.theme = DarkTheme()
 
 ## Handling User Sessions
 
-By default the Appero SDK tracks user mood through a points value recorded against a unique user ID that is generated on demand and then persisted in UserDefaults. If you have an existing unique user ID, for example from an account based system, this can be substituted instead.
+By default the Appero SDK tracks user experience through a points value recorded against a unique user ID that is generated on demand and then persisted in UserDefaults. If you have an existing unique user ID, for example from an account based system, this can be substituted instead.
 
 ```
 Appero.instance.setUser("your_unique_user_id")
