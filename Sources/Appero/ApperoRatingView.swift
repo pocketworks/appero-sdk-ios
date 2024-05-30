@@ -229,7 +229,7 @@ private struct RatingView: View {
     }
 }
 
-/// Supports showing the Appero the panel from UIKit in a hosting controller.
+/// Supports showing the Appero panel from UIKit in a hosting controller.
 @available(iOS 16, *)
 public struct ApperoPresentationView: View {
     
@@ -238,6 +238,11 @@ public struct ApperoPresentationView: View {
      
     @State var presented = true
     
+    
+    /// This view is a convenience for showing the Appero feedback UI on a UIKit app in a UIHostingController. The hosting view controller should be added as a child view controller of the view controller where you plan to allow the feedback sheet to appear. See the ApperoExampleUIKit project for a sample implementation of this approach.
+    /// - Parameters:
+    ///   - productName: the product name you want to appear in the feedback UI
+    ///   - onDismiss: the action to be carried out on dismissing the panel, typically to remove the child view controller from its parent.
     public init(productName: String, onDismiss: (() -> ())?) {
         self.productName = productName
         self.onDismiss = onDismiss

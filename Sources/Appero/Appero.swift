@@ -26,14 +26,18 @@ public class Appero {
     }
     
     // default key constants
-    private let kUserIdKey = "appero_user_id"
-    private let kUserApperoDictionary = "appero_value"
-    private let kUserApperoValue = "appero_value"
-    private let kRatingThreshold = "appero_rating_threshold"
-    private let kRatingPrompted = "appero_rating_prompted"
+    
+    struct Constants {
+        static let kUserIdKey = "appero_user_id"
+        static let kUserApperoDictionary = "appero_value"
+        static let kUserApperoValue = "appero_value"
+        static let kRatingThreshold = "appero_rating_threshold"
+        static let kRatingPrompted = "appero_rating_prompted"
+        
+        static let kDefaultRatingThreshold = 10
+    }
     
     // config constants
-    private let kDefaultRatingThreshold = 10
     
     public static let instance = Appero()
 
@@ -47,47 +51,47 @@ public class Appero {
     // MARK: - Computed properties
     private var userId: String {
         get {
-            if let id = UserDefaults.standard.string(forKey: kUserIdKey) {
+            if let id = UserDefaults.standard.string(forKey: Constants.kUserIdKey) {
                 return id
             } else {
                 let id = UUID().uuidString
-                UserDefaults.standard.setValue(id, forKey: kUserIdKey)
+                UserDefaults.standard.setValue(id, forKey: Constants.kUserIdKey)
                 return id
             }
         }
         set {
-            UserDefaults.standard.setValue(newValue, forKey: kUserIdKey)
+            UserDefaults.standard.setValue(newValue, forKey: Constants.kUserIdKey)
         }
     }
     
     public var ratingThreshold: Int {
         get {
-            let id = UserDefaults.standard.integer(forKey: kRatingThreshold)
+            let id = UserDefaults.standard.integer(forKey: Constants.kRatingThreshold)
             if id == 0 {
-                return kDefaultRatingThreshold
+                return Constants.kDefaultRatingThreshold
             } else {
                 return id
             }
         }
         set {
-            UserDefaults.standard.setValue(newValue, forKey: kRatingThreshold)
+            UserDefaults.standard.setValue(newValue, forKey: Constants.kRatingThreshold)
         }
     }
     
     public var experienceValue: Int {
         get {
-            if let dict = UserDefaults.standard.dictionary(forKey: kUserApperoDictionary) as? [String: Int] {
+            if let dict = UserDefaults.standard.dictionary(forKey: Constants.kUserApperoDictionary) as? [String: Int] {
                 return dict[userId] ?? 0
             } else {
                 return 0
             }
         }
         set {
-            if var dict = UserDefaults.standard.dictionary(forKey: kUserApperoDictionary) {
+            if var dict = UserDefaults.standard.dictionary(forKey: Constants.kUserApperoDictionary) {
                 dict[userId] = newValue
-                UserDefaults.standard.setValue(dict, forKey: kUserApperoDictionary)
+                UserDefaults.standard.setValue(dict, forKey: Constants.kUserApperoDictionary)
             } else {
-                UserDefaults.standard.setValue([userId : newValue], forKey: kUserApperoDictionary)
+                UserDefaults.standard.setValue([userId : newValue], forKey: Constants.kUserApperoDictionary)
             }
         }
     }
@@ -95,10 +99,10 @@ public class Appero {
     /// Flag used to record if the current user has been prompted for their feedback or not. When this is true subsequent crossings of the experience point thresholds will not have an effect.
     public var hasRatingBeenPrompted: Bool {
         get {
-            return UserDefaults.standard.bool(forKey: kRatingPrompted)
+            return UserDefaults.standard.bool(forKey: Constants.kRatingPrompted)
         }
         set {
-            UserDefaults.standard.setValue(newValue, forKey: kRatingPrompted)
+            UserDefaults.standard.setValue(newValue, forKey: Constants.kRatingPrompted)
         }
     }
     
@@ -121,12 +125,12 @@ public class Appero {
     /// Allows a custom user identifier to be set, otherwise Appero will create its own unique user identifier. Identifiers persist until ``resetUser`` is called.
     /// - Parameter id: string identifier, e.g. a unid
     public func setUserId(_ id: String) {
-        UserDefaults.standard.setValue(id, forKey: kUserIdKey)
+        UserDefaults.standard.setValue(id, forKey: Constants.kUserIdKey)
     }
     
     /// Resets the user ID this Appero session will be recorded against. Typically you would call this when the user logs out of your app.
     public func resetUser() {
-        UserDefaults.standard.setValue(nil, forKey: kUserIdKey)
+        UserDefaults.standard.setValue(nil, forKey: Constants.kUserIdKey)
     }
     
     /// Convenience function to reset the experience point value to zero and remove the feedback prompted flags
@@ -145,13 +149,6 @@ public class Appero {
     /// - Parameter points: a positive or negative number of points
     public func log(points: Int) {
         experienceValue += points
-    }
-    
-
-    /// Returns the Appero value associated with the current user ID.
-    /// - Returns: integer representing the current user's total Appero value
-    public func totalValue() -> Int {
-        return experienceValue
     }
     
     /// Convenience function for requesting an app store rating. We recommend letting Appero handle when this is called to maximise your chances of a positive rating.
