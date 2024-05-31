@@ -127,3 +127,7 @@ When using a custom user ID it's important to remember to reset the user on Appe
 ```
 Appero.instance.resetUser()
 ```
+
+## Connecting to 3rd Party Analytics
+
+If you want to capture people interacting with the Appero UI in your analytics, we allow setting an analytics delegate on Appero. Simply adopt the `ApperoAnalyticsDelegate` and implement the required functions, when these events are triggered in the UI it can then make the appropriate calls to your analytic provider's SDK.

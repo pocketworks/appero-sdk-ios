@@ -12,7 +12,8 @@ public protocol ApperoTheme {
     var secondaryTextColor: Color { get }
     var buttonColor: Color { get }
     var buttonTextColor: Color { get }
-    var textFieldBackground: Color { get }
+    var textFieldBackgroundColor: Color { get }
+    var cursorColor: Color { get }
 }
 
 public struct DefaultTheme: ApperoTheme {
@@ -40,8 +41,12 @@ public struct DefaultTheme: ApperoTheme {
         return Color(.white)
     }
     
-    public var textFieldBackground: Color {
+    public var textFieldBackgroundColor: Color {
         return Color(.secondarySystemBackground)
+    }
+    
+    public var cursorColor: Color {
+        return Color(.systemBlue)
     }
     
     
@@ -72,8 +77,12 @@ public struct LightTheme: ApperoTheme {
         return .white
     }
     
-    public var textFieldBackground: Color {
+    public var textFieldBackgroundColor: Color {
         return Color(hex: "F5F5F5")
+    }
+    
+    public var cursorColor: Color {
+        return Color(hex: "50A95F")
     }
 }
 
@@ -102,8 +111,12 @@ public struct DarkTheme: ApperoTheme {
         return .white
     }
     
-    public var textFieldBackground: Color {
+    public var textFieldBackgroundColor: Color {
         return Color(hex: "080935")
+    }
+    
+    public var cursorColor: Color {
+        return Color(hex: "00A0E4")
     }
 }
 

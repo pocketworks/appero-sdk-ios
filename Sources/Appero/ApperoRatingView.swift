@@ -19,7 +19,7 @@ public struct ApperoRatingView: View {
     @Environment(\.presentationMode) var presentationMode
     
     let productName: String
-
+    
     @State var selectedPanelHeight = PresentationDetent.fraction(0.33)
     @State var panelMode: ApperoPanel = .rating
     
@@ -59,6 +59,7 @@ public struct ApperoRatingView: View {
                                     feedback: feedback
                                 )
                             }
+                            Appero.instance.analyticsDelegate?.logApperoFeedback(rating: rating, feedback: feedback)
                             self.rating = rating
                             panelMode = .thanks
                             selectedPanelHeight = rating > 3 ? ratingDetent : thanksDetent
@@ -113,6 +114,7 @@ private struct FeedbackView: View {
                 showFeedbackForm = true
                 onRatingChosen(rating)
                 self.rating = rating
+                Appero.instance.analyticsDelegate?.logRatingSelected(rating: rating)
             })
             Spacer()
             if showFeedbackForm {
@@ -122,12 +124,13 @@ private struct FeedbackView: View {
                 VStack() {
                     ZStack(alignment: .top) {
                         RoundedRectangle(cornerRadius: 8.0)
-                            .foregroundColor(Appero.instance.theme.textFieldBackground)
+                            .foregroundColor(Appero.instance.theme.textFieldBackgroundColor)
                         TextField(text: $feedbackText, prompt: Text("Share your thoughts here").foregroundColor(Appero.instance.theme.primaryTextColor.opacity(0.5)),
                                   axis: .vertical, label: {})
                         .lineLimit(1...5)
                         .foregroundColor(Appero.instance.theme.primaryTextColor)
                         .padding(.all)
+                        .accentColor(Appero.instance.theme.cursorColor)
                         .onChange(of: feedbackText) { text in
                             feedbackText = String(text.prefix(kFeedbackLimit))
                         }

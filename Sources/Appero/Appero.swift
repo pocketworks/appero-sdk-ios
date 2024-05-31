@@ -29,10 +29,10 @@ public class Appero {
     
     struct Constants {
         static let kUserIdKey = "appero_user_id"
-        static let kUserApperoDictionary = "appero_value"
-        static let kUserApperoValue = "appero_value"
+        static let kUserApperoDictionary = "appero_user"
+        static let kUserExperienceValue = "appero_experience_value"
         static let kRatingThreshold = "appero_rating_threshold"
-        static let kRatingPrompted = "appero_rating_prompted"
+        static let kRatingPromptedDictionary = "appero_rating_prompted"
         
         static let kDefaultRatingThreshold = 10
     }
@@ -45,11 +45,14 @@ public class Appero {
     private var apiKey: String?
     private var clientId: String?
     
+    /// Specifies a delegate to handle analytics
+    public var analyticsDelegate: ApperoAnalyticsDelegate?
+    
     /// Specifies a theme to use for the Appero UI
     public var theme: ApperoTheme = DefaultTheme()
     
     // MARK: - Computed properties
-    private var userId: String {
+    public var userId: String {
         get {
             if let id = UserDefaults.standard.string(forKey: Constants.kUserIdKey) {
                 return id
@@ -81,6 +84,7 @@ public class Appero {
     public var experienceValue: Int {
         get {
             if let dict = UserDefaults.standard.dictionary(forKey: Constants.kUserApperoDictionary) as? [String: Int] {
+                print(userId)
                 return dict[userId] ?? 0
             } else {
                 return 0
@@ -89,9 +93,11 @@ public class Appero {
         set {
             if var dict = UserDefaults.standard.dictionary(forKey: Constants.kUserApperoDictionary) {
                 dict[userId] = newValue
+                print(userId)
                 UserDefaults.standard.setValue(dict, forKey: Constants.kUserApperoDictionary)
             } else {
                 UserDefaults.standard.setValue([userId : newValue], forKey: Constants.kUserApperoDictionary)
+                print(userId)
             }
         }
     }
@@ -99,10 +105,19 @@ public class Appero {
     /// Flag used to record if the current user has been prompted for their feedback or not. When this is true subsequent crossings of the experience point thresholds will not have an effect.
     public var hasRatingBeenPrompted: Bool {
         get {
-            return UserDefaults.standard.bool(forKey: Constants.kRatingPrompted)
+            if let dict = UserDefaults.standard.dictionary(forKey: Constants.kRatingPromptedDictionary) as? [String: Bool] {
+                return dict[userId] ?? false
+            } else {
+                return false
+            }
         }
         set {
-            UserDefaults.standard.setValue(newValue, forKey: Constants.kRatingPrompted)
+            if var dict = UserDefaults.standard.dictionary(forKey: Constants.kRatingPromptedDictionary) {
+                dict[userId] = newValue
+                UserDefaults.standard.setValue(dict, forKey: Constants.kRatingPromptedDictionary)
+            } else {
+                UserDefaults.standard.setValue([userId : newValue], forKey: Constants.kRatingPromptedDictionary)
+            }
         }
     }
     
