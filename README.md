@@ -122,7 +122,7 @@ By default the Appero SDK tracks user experience through a points value recorded
 Appero.instance.setUser("your_unique_user_id")
 ```
 
-When using a custom user ID it's important to remember to reset the user on Appero when a logout occurs. This allows the mood values to be recorded independently on one device for multiple users.
+When using a custom user ID it's important to remember to reset the user on Appero when a logout occurs. This allows the experience score to be recorded independently on one device for multiple users. The flag indicating whether a user has submitted feedback or not is also tied to their user ID.
 
 ```
 Appero.instance.resetUser()
