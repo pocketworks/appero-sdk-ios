@@ -130,4 +130,22 @@ Appero.instance.resetUser()
 
 ## Connecting to 3rd Party Analytics
 
-If you want to capture people interacting with the Appero UI in your analytics, we allow setting an analytics delegate on Appero. Simply adopt the `ApperoAnalyticsDelegate` and implement the required functions, when these events are triggered in the UI it can then make the appropriate calls to your analytic provider's SDK.
+If you want to capture people interacting with the Appero UI in your analytics, we allow setting an analytics delegate on Appero. Simply adopt the `ApperoAnalyticsDelegate` and implement the required functions, when these events are triggered in the UI it can then make the appropriate calls to your analytic provider's SDK. Here's a typical implementation for a fictitious analytics service:
+
+```
+struct MyAnalytics: ApperoAnalyticsDelegate {
+    func logApperoFeedback(rating: Int, feedback: String) {
+        SomeAnalyticsService().logEvent("Appero feedback", values: ["rating": rating, "feedback": feedback])
+    }
+    
+    func logRatingSelected(rating: Int) {
+        SomeAnalyticsService().logEvent("Appero rating changed", values: ["rating": rating])
+    }
+}
+```
+
+Set the delegate on the Appero shared instance somewhere sensible like after you've set your client and API keys.
+
+```
+Appero.instance.analyticsDelegate = ApperoAnalyticsDelegate()
+```
