@@ -19,8 +19,8 @@ struct ApperoExampleSwiftUIApp: App {
     
     init() {
         Appero.instance.start(
-            apiKey: "79c589ac-325d-4621-95aa-0a4c7ecdc5ba",
-            clientId: "2ffab699-33a7-4bef-9473-3f661cf22553"
+            apiKey: "your api key",
+            clientId: "your client id"
         )
         Appero.instance.theme = DefaultTheme()  // set the theme to use for the Appero UI
         Appero.instance.ratingThreshold = 10   // the threshold at which point we'll trigger the Appero UI
