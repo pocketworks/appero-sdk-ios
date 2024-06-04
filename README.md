@@ -15,8 +15,6 @@ The Appero SDK for iOS is distributed as a Swift Package. To add the package, en
 https://github.com/pocketworks/appero-sdk-ios 
 ```
 
-During this beta period, select the dependency rule **Branch** and choose **Main** as the target branch for the latest stable version. Upon commercial release we will switch to using versioned releases.
-
 ## Getting Started
 
 The Appero SDK for iOS is based around a shared instance model that can be accessed from anywhere in your code once initialised. We recommend initialising Appero in either your main view's init() method for a SwiftUI app or in applicationDidFinishLaunching in a storyboard/UIKit based app.
