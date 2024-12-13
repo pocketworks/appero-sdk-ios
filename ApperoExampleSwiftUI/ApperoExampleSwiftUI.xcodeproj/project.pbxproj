@@ -360,7 +360,7 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pocketworks/appero-sdk-ios";
 			requirement = {
-				branch = main;
+				branch = "feature/custom-assets-fonts";
 				kind = branch;
 			};
 		};

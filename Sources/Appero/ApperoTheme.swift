@@ -118,11 +118,11 @@ public struct LightTheme: ApperoTheme {
     }
     
     public var headingFont: Font {
-        return Font.custom("NewYorkMedium-Regular", size: 18, relativeTo: .headline)
+        return Font.custom("Helvetica-Bold", size: 18, relativeTo: .headline)
     }
     
     public var bodyFont: Font {
-        return Font.custom("NewYorkMedium-Regular", size: 16, relativeTo: .body)
+        return Font.custom("Helvetica", size: 16, relativeTo: .body)
     }
     
     public func imageFor(rating: ApperoRating) -> Image {
@@ -175,11 +175,11 @@ public struct DarkTheme: ApperoTheme {
     }
     
     public var headingFont: Font {
-        return Font.custom("NewYorkMedium-Regular", size: 18, relativeTo: .headline)
+        return Font.custom("Georgia-Bold", size: 18, relativeTo: .headline)
     }
     
     public var bodyFont: Font {
-        return Font.custom("NewYorkMedium-Regular", size: 16, relativeTo: .body)
+        return Font.custom("Georgia", size: 16, relativeTo: .body)
     }
     
     public func imageFor(rating: ApperoRating) -> Image {
