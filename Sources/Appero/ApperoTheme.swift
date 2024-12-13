@@ -16,6 +16,8 @@ public protocol ApperoTheme {
     var cursorColor: Color { get }
     var headingFont: Font { get }
     var bodyFont: Font { get }
+    var buttonFont: Font { get }
+    var captionFont: Font { get }
     func imageFor(rating: ApperoRating) -> Image
 }
 
@@ -69,7 +71,11 @@ public struct DefaultTheme: ApperoTheme {
     }
     
     public var buttonFont: Font {
-        return Font.system(.body, design: .default, weight: .bold)
+        if #available(iOS 16.0, *) {
+            return Font.system(.body, design: .default, weight: .bold)
+        } else {
+            return Font.system(.body, design: .default).weight(.bold)
+        }
     }
     
     public var captionFont: Font {
