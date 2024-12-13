@@ -101,12 +101,13 @@ private struct FeedbackView: View {
         VStack() {
             Spacer()
             Text("We’re happy to see that you’re using \(productName) 🎉")
-                .font(.headline)
+                .font(Appero.instance.theme.headingFont)
                 .foregroundColor(Appero.instance.theme.primaryTextColor)
                 .lineLimit(2)
                 .multilineTextAlignment(.center)
             Spacer()
             Text("Let us know how we’re doing")
+                .font(Appero.instance.theme.bodyFont)
                 .padding(.leading)
                 .padding(.trailing)
                 .foregroundColor(Appero.instance.theme.primaryTextColor)
@@ -129,6 +130,7 @@ private struct FeedbackView: View {
                                   axis: .vertical, label: {})
                         .lineLimit(1...5)
                         .foregroundColor(Appero.instance.theme.primaryTextColor)
+                        .font(Appero.instance.theme.bodyFont)
                         .padding(.all)
                         .accentColor(Appero.instance.theme.cursorColor)
                         .onChange(of: feedbackText) { text in
@@ -151,6 +153,7 @@ private struct FeedbackView: View {
                         HStack() {
                             Spacer()
                             Text("Send feedback")
+                                .font(Appero.instance.theme.bodyFont)
                                 .foregroundStyle(Appero.instance.theme.buttonTextColor)
                             Spacer()
                         }

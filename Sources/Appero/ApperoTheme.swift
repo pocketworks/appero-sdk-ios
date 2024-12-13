@@ -14,6 +14,17 @@ public protocol ApperoTheme {
     var buttonTextColor: Color { get }
     var textFieldBackgroundColor: Color { get }
     var cursorColor: Color { get }
+    var headingFont: Font { get }
+    var bodyFont: Font { get }
+    func imageFor(rating: ApperoRating) -> Image
+}
+
+public enum ApperoRating: Int {
+    case veryPoor = 1
+    case poor = 2
+    case average = 3
+    case good = 4
+    case veryGood = 5
 }
 
 public struct DefaultTheme: ApperoTheme {
@@ -49,7 +60,28 @@ public struct DefaultTheme: ApperoTheme {
         return Color(.systemBlue)
     }
     
+    public var headingFont: Font {
+        return Font.system(.headline, design: .default)
+    }
     
+    public var bodyFont: Font {
+        return Font.system(.body, design: .default)
+    }
+    
+    public func imageFor(rating: ApperoRating) -> Image {
+        switch rating {
+            case .veryPoor:
+                return Image("rating1")
+            case .poor:
+                return Image("rating2")
+            case .average:
+                return Image("rating3")
+            case .good:
+                return Image("rating4")
+            case .veryGood:
+                return Image("rating5")
+        }
+    }
 }
 
 public struct LightTheme: ApperoTheme {
@@ -84,6 +116,29 @@ public struct LightTheme: ApperoTheme {
     public var cursorColor: Color {
         return Color(hex: "50A95F")
     }
+    
+    public var headingFont: Font {
+        return Font.custom("NewYorkMedium-Regular", size: 18, relativeTo: .headline)
+    }
+    
+    public var bodyFont: Font {
+        return Font.custom("NewYorkMedium-Regular", size: 16, relativeTo: .body)
+    }
+    
+    public func imageFor(rating: ApperoRating) -> Image {
+        switch rating {
+            case .veryPoor:
+                return Image("rating1")
+            case .poor:
+                return Image("rating2")
+            case .average:
+                return Image("rating3")
+            case .good:
+                return Image("rating4")
+            case .veryGood:
+                return Image("rating5")
+        }
+    }
 }
 
 public struct DarkTheme: ApperoTheme {
@@ -117,6 +172,29 @@ public struct DarkTheme: ApperoTheme {
     
     public var cursorColor: Color {
         return Color(hex: "00A0E4")
+    }
+    
+    public var headingFont: Font {
+        return Font.custom("NewYorkMedium-Regular", size: 18, relativeTo: .headline)
+    }
+    
+    public var bodyFont: Font {
+        return Font.custom("NewYorkMedium-Regular", size: 16, relativeTo: .body)
+    }
+    
+    public func imageFor(rating: ApperoRating) -> Image {
+        switch rating {
+            case .veryPoor:
+                return Image(systemName: "1.circle")
+            case .poor:
+                return Image(systemName: "2.circle")
+            case .average:
+                return Image(systemName: "3.circle")
+            case .good:
+                return Image(systemName: "4.circle")
+            case .veryGood:
+                return Image(systemName: "5.circle")
+        }
     }
 }
 

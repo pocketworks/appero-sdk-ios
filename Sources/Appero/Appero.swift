@@ -84,7 +84,6 @@ public class Appero {
     public var experienceValue: Int {
         get {
             if let dict = UserDefaults.standard.dictionary(forKey: Constants.kUserApperoDictionary) as? [String: Int] {
-                print(userId)
                 return dict[userId] ?? 0
             } else {
                 return 0
@@ -93,11 +92,9 @@ public class Appero {
         set {
             if var dict = UserDefaults.standard.dictionary(forKey: Constants.kUserApperoDictionary) {
                 dict[userId] = newValue
-                print(userId)
                 UserDefaults.standard.setValue(dict, forKey: Constants.kUserApperoDictionary)
             } else {
                 UserDefaults.standard.setValue([userId : newValue], forKey: Constants.kUserApperoDictionary)
-                print(userId)
             }
         }
     }
