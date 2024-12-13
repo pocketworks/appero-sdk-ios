@@ -121,6 +121,7 @@ private struct FeedbackView: View {
             if showFeedbackForm {
                 Text(promptText)
                     .multilineTextAlignment(.center)
+                    .font(Appero.instance.theme.bodyFont)
                     .foregroundColor(Appero.instance.theme.primaryTextColor)
                 VStack() {
                     ZStack(alignment: .top) {
@@ -143,7 +144,7 @@ private struct FeedbackView: View {
                     HStack {
                         Spacer()
                         Text("\(feedbackText.count) / \(kFeedbackLimit)")
-                            .font(.caption)
+                            .font(Appero.instance.theme.captionFont)
                             .foregroundStyle(Appero.instance.theme.secondaryTextColor)
                     }
                     Spacer()
@@ -153,7 +154,7 @@ private struct FeedbackView: View {
                         HStack() {
                             Spacer()
                             Text("Send feedback")
-                                .font(Appero.instance.theme.bodyFont)
+                                .font(Appero.instance.theme.buttonFont)
                                 .foregroundStyle(Appero.instance.theme.buttonTextColor)
                             Spacer()
                         }
@@ -186,6 +187,7 @@ private struct ApperoButtonStyle: ButtonStyle {
             .padding(EdgeInsets(top: 8.0, leading: 8.0, bottom: 8.0, trailing: 8.0))
             .background(Appero.instance.theme.buttonColor)
             .foregroundStyle(Appero.instance.theme.buttonTextColor)
+            .font(Appero.instance.theme.buttonFont)
             .clipShape(Capsule())
             .scaleEffect(configuration.isPressed ? 1.05 : 1)
             .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
@@ -197,6 +199,7 @@ private struct ApperoTextButtonStyle: ButtonStyle {
         configuration.label
             .padding(EdgeInsets(top: 8.0, leading: 8.0, bottom: 8.0, trailing: 8.0))
             .foregroundStyle(Appero.instance.theme.buttonColor)
+            .font(Appero.instance.theme.buttonFont)
             .scaleEffect(configuration.isPressed ? 1.05 : 1)
             .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
     }

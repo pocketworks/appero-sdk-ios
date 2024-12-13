@@ -68,6 +68,14 @@ public struct DefaultTheme: ApperoTheme {
         return Font.system(.body, design: .default)
     }
     
+    public var buttonFont: Font {
+        return Font.system(.body, design: .default, weight: .bold)
+    }
+    
+    public var captionFont: Font {
+        return Font.system(.caption, design: .default)
+    }
+    
     public func imageFor(rating: ApperoRating) -> Image {
         switch rating {
             case .veryPoor:
@@ -125,6 +133,14 @@ public struct LightTheme: ApperoTheme {
         return Font.custom("Helvetica", size: 16, relativeTo: .body)
     }
     
+    public var buttonFont: Font {
+        return Font.custom("Helvetica-Bold", size: 16, relativeTo: .body)
+    }
+    
+    public var captionFont: Font {
+        return Font.custom("Helvetica", size: 14, relativeTo: .caption)
+    }
+    
     public func imageFor(rating: ApperoRating) -> Image {
         switch rating {
             case .veryPoor:
@@ -180,6 +196,14 @@ public struct DarkTheme: ApperoTheme {
     
     public var bodyFont: Font {
         return Font.custom("Georgia", size: 16, relativeTo: .body)
+    }
+    
+    public var buttonFont: Font {
+        return Font.custom("Georgia", size: 16, relativeTo: .body)
+    }
+    
+    public var captionFont: Font {
+        return Font.custom("Georgia", size: 14, relativeTo: .caption)
     }
     
     public func imageFor(rating: ApperoRating) -> Image {
