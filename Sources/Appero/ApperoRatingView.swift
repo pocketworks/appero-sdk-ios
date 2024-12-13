@@ -224,7 +224,7 @@ private struct RatingView: View {
                 Button(action: {
                     self.ratingSelected(index: index)
                 }, label: {
-                    Image( "rating\(index)", bundle: Bundle.appero)
+                    Appero.instance.theme.imageFor(rating: ApperoRating(rawValue: index) ?? .average)
                         .opacity(selectedRating == 0 || selectedRating == index ? 1.0 : 0.3)
                 })
                 .buttonStyle(RatingButtonStyle())

@@ -85,15 +85,15 @@ public struct DefaultTheme: ApperoTheme {
     public func imageFor(rating: ApperoRating) -> Image {
         switch rating {
             case .veryPoor:
-                return Image("rating1")
+                return Image("rating1", bundle: Bundle.appero)
             case .poor:
-                return Image("rating2")
+                return Image("rating2", bundle: Bundle.appero)
             case .average:
-                return Image("rating3")
+                return Image("rating3", bundle: Bundle.appero)
             case .good:
-                return Image("rating4")
+                return Image("rating4", bundle: Bundle.appero)
             case .veryGood:
-                return Image("rating5")
+                return Image("rating5", bundle: Bundle.appero)
         }
     }
 }
@@ -150,15 +150,15 @@ public struct LightTheme: ApperoTheme {
     public func imageFor(rating: ApperoRating) -> Image {
         switch rating {
             case .veryPoor:
-                return Image("rating1")
+                return Image("rating1", bundle: Bundle.appero)
             case .poor:
-                return Image("rating2")
+                return Image("rating2", bundle: Bundle.appero)
             case .average:
-                return Image("rating3")
+                return Image("rating3", bundle: Bundle.appero)
             case .good:
-                return Image("rating4")
+                return Image("rating4", bundle: Bundle.appero)
             case .veryGood:
-                return Image("rating5")
+                return Image("rating5", bundle: Bundle.appero)
         }
     }
 }
@@ -215,15 +215,15 @@ public struct DarkTheme: ApperoTheme {
     public func imageFor(rating: ApperoRating) -> Image {
         switch rating {
             case .veryPoor:
-                return Image(systemName: "1.circle")
+                return Image("rating1-alt", bundle: Bundle.appero)
             case .poor:
-                return Image(systemName: "2.circle")
+                return Image("rating2-alt", bundle: Bundle.appero)
             case .average:
-                return Image(systemName: "3.circle")
+                return Image("rating3-alt", bundle: Bundle.appero)
             case .good:
-                return Image(systemName: "4.circle")
+                return Image("rating4-alt", bundle: Bundle.appero)
             case .veryGood:
-                return Image(systemName: "5.circle")
+                return Image("rating5-alt", bundle: Bundle.appero)
         }
     }
 }
