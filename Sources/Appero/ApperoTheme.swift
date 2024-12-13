@@ -14,6 +14,19 @@ public protocol ApperoTheme {
     var buttonTextColor: Color { get }
     var textFieldBackgroundColor: Color { get }
     var cursorColor: Color { get }
+    var headingFont: Font { get }
+    var bodyFont: Font { get }
+    var buttonFont: Font { get }
+    var captionFont: Font { get }
+    func imageFor(rating: ApperoRating) -> Image
+}
+
+public enum ApperoRating: Int {
+    case veryPoor = 1
+    case poor = 2
+    case average = 3
+    case good = 4
+    case veryGood = 5
 }
 
 public struct DefaultTheme: ApperoTheme {
@@ -49,7 +62,40 @@ public struct DefaultTheme: ApperoTheme {
         return Color(.systemBlue)
     }
     
+    public var headingFont: Font {
+        return Font.system(.headline, design: .default)
+    }
     
+    public var bodyFont: Font {
+        return Font.system(.body, design: .default)
+    }
+    
+    public var buttonFont: Font {
+        if #available(iOS 16.0, *) {
+            return Font.system(.body, design: .default, weight: .bold)
+        } else {
+            return Font.system(.body, design: .default).weight(.bold)
+        }
+    }
+    
+    public var captionFont: Font {
+        return Font.system(.caption, design: .default)
+    }
+    
+    public func imageFor(rating: ApperoRating) -> Image {
+        switch rating {
+            case .veryPoor:
+                return Image("rating1", bundle: Bundle.appero)
+            case .poor:
+                return Image("rating2", bundle: Bundle.appero)
+            case .average:
+                return Image("rating3", bundle: Bundle.appero)
+            case .good:
+                return Image("rating4", bundle: Bundle.appero)
+            case .veryGood:
+                return Image("rating5", bundle: Bundle.appero)
+        }
+    }
 }
 
 public struct LightTheme: ApperoTheme {
@@ -84,6 +130,37 @@ public struct LightTheme: ApperoTheme {
     public var cursorColor: Color {
         return Color(hex: "50A95F")
     }
+    
+    public var headingFont: Font {
+        return Font.custom("Helvetica-Bold", size: 18, relativeTo: .headline)
+    }
+    
+    public var bodyFont: Font {
+        return Font.custom("Helvetica", size: 16, relativeTo: .body)
+    }
+    
+    public var buttonFont: Font {
+        return Font.custom("Helvetica-Bold", size: 16, relativeTo: .body)
+    }
+    
+    public var captionFont: Font {
+        return Font.custom("Helvetica", size: 14, relativeTo: .caption)
+    }
+    
+    public func imageFor(rating: ApperoRating) -> Image {
+        switch rating {
+            case .veryPoor:
+                return Image("rating1", bundle: Bundle.appero)
+            case .poor:
+                return Image("rating2", bundle: Bundle.appero)
+            case .average:
+                return Image("rating3", bundle: Bundle.appero)
+            case .good:
+                return Image("rating4", bundle: Bundle.appero)
+            case .veryGood:
+                return Image("rating5", bundle: Bundle.appero)
+        }
+    }
 }
 
 public struct DarkTheme: ApperoTheme {
@@ -117,6 +194,37 @@ public struct DarkTheme: ApperoTheme {
     
     public var cursorColor: Color {
         return Color(hex: "00A0E4")
+    }
+    
+    public var headingFont: Font {
+        return Font.custom("Georgia-Bold", size: 18, relativeTo: .headline)
+    }
+    
+    public var bodyFont: Font {
+        return Font.custom("Georgia", size: 16, relativeTo: .body)
+    }
+    
+    public var buttonFont: Font {
+        return Font.custom("Georgia", size: 16, relativeTo: .body)
+    }
+    
+    public var captionFont: Font {
+        return Font.custom("Georgia", size: 14, relativeTo: .caption)
+    }
+    
+    public func imageFor(rating: ApperoRating) -> Image {
+        switch rating {
+            case .veryPoor:
+                return Image("rating1-alt", bundle: Bundle.appero)
+            case .poor:
+                return Image("rating2-alt", bundle: Bundle.appero)
+            case .average:
+                return Image("rating3-alt", bundle: Bundle.appero)
+            case .good:
+                return Image("rating4-alt", bundle: Bundle.appero)
+            case .veryGood:
+                return Image("rating5-alt", bundle: Bundle.appero)
+        }
     }
 }
 
