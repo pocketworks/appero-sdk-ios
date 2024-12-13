@@ -101,12 +101,13 @@ private struct FeedbackView: View {
         VStack() {
             Spacer()
             Text("We’re happy to see that you’re using \(productName) 🎉")
-                .font(.headline)
+                .font(Appero.instance.theme.headingFont)
                 .foregroundColor(Appero.instance.theme.primaryTextColor)
                 .lineLimit(2)
                 .multilineTextAlignment(.center)
             Spacer()
             Text("Let us know how we’re doing")
+                .font(Appero.instance.theme.bodyFont)
                 .padding(.leading)
                 .padding(.trailing)
                 .foregroundColor(Appero.instance.theme.primaryTextColor)
@@ -120,6 +121,7 @@ private struct FeedbackView: View {
             if showFeedbackForm {
                 Text(promptText)
                     .multilineTextAlignment(.center)
+                    .font(Appero.instance.theme.bodyFont)
                     .foregroundColor(Appero.instance.theme.primaryTextColor)
                 VStack() {
                     ZStack(alignment: .top) {
@@ -129,6 +131,7 @@ private struct FeedbackView: View {
                                   axis: .vertical, label: {})
                         .lineLimit(1...5)
                         .foregroundColor(Appero.instance.theme.primaryTextColor)
+                        .font(Appero.instance.theme.bodyFont)
                         .padding(.all)
                         .accentColor(Appero.instance.theme.cursorColor)
                         .onChange(of: feedbackText) { text in
@@ -141,7 +144,7 @@ private struct FeedbackView: View {
                     HStack {
                         Spacer()
                         Text("\(feedbackText.count) / \(kFeedbackLimit)")
-                            .font(.caption)
+                            .font(Appero.instance.theme.captionFont)
                             .foregroundStyle(Appero.instance.theme.secondaryTextColor)
                     }
                     Spacer()
@@ -151,6 +154,7 @@ private struct FeedbackView: View {
                         HStack() {
                             Spacer()
                             Text("Send feedback")
+                                .font(Appero.instance.theme.buttonFont)
                                 .foregroundStyle(Appero.instance.theme.buttonTextColor)
                             Spacer()
                         }
@@ -183,6 +187,7 @@ private struct ApperoButtonStyle: ButtonStyle {
             .padding(EdgeInsets(top: 8.0, leading: 8.0, bottom: 8.0, trailing: 8.0))
             .background(Appero.instance.theme.buttonColor)
             .foregroundStyle(Appero.instance.theme.buttonTextColor)
+            .font(Appero.instance.theme.buttonFont)
             .clipShape(Capsule())
             .scaleEffect(configuration.isPressed ? 1.05 : 1)
             .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
@@ -194,6 +199,7 @@ private struct ApperoTextButtonStyle: ButtonStyle {
         configuration.label
             .padding(EdgeInsets(top: 8.0, leading: 8.0, bottom: 8.0, trailing: 8.0))
             .foregroundStyle(Appero.instance.theme.buttonColor)
+            .font(Appero.instance.theme.buttonFont)
             .scaleEffect(configuration.isPressed ? 1.05 : 1)
             .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
     }
@@ -218,7 +224,7 @@ private struct RatingView: View {
                 Button(action: {
                     self.ratingSelected(index: index)
                 }, label: {
-                    Image( "rating\(index)", bundle: Bundle.appero)
+                    Appero.instance.theme.imageFor(rating: ApperoRating(rawValue: index) ?? .average)
                         .opacity(selectedRating == 0 || selectedRating == index ? 1.0 : 0.3)
                 })
                 .buttonStyle(RatingButtonStyle())
