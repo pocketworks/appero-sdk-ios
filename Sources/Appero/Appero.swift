@@ -25,6 +25,27 @@ public class Appero {
         case strongNegative = 1
     }
     
+    public enum Frustration {
+        /// a search or query returned no results
+        case notFound
+        /// a purchase failed
+        case purchase
+        /// validation failed on a field
+        case validation
+        /// poor connection impacted the user
+        case connectivity
+        /// something took longer to complete than we expected
+        case slow
+        /// suggested content was downvoted by the user
+        case unhelpful
+        /// an error occurred that impacted the user
+        case error(String)
+        /// user denied permission to location/camera/push notifications etc
+        case permissionRequest
+        /// a custom frustration you want to track
+        case other(String)
+    }
+    
     // default key constants
     
     struct Constants {
@@ -33,7 +54,9 @@ public class Appero {
         static let kUserExperienceValue = "appero_experience_value"
         static let kRatingThreshold = "appero_rating_threshold"
         static let kRatingPromptedDictionary = "appero_rating_prompted"
+        static let kFrustrationThreshold = "appero_frustration_threshold"
         
+        static let kDefaultThrustrationThreshold = 5
         static let kDefaultRatingThreshold = 10
     }
     
@@ -81,7 +104,39 @@ public class Appero {
         }
     }
     
+    public var frustrationThreshold: Int {
+        get {
+            let id = UserDefaults.standard.integer(forKey: Constants.kFrustrationThreshold)
+            if id == 0 {
+                return Constants.kDefaultFrustrationThreshold
+            } else {
+                return id
+            }
+        }
+        set {
+            UserDefaults.standard.setValue(newValue, forKey: Constants.kRatingThreshold)
+        }
+    }
+    
     public var experienceValue: Int {
+        get {
+            if let dict = UserDefaults.standard.dictionary(forKey: Constants.kUserApperoDictionary) as? [String: Int] {
+                return dict[userId] ?? 0
+            } else {
+                return 0
+            }
+        }
+        set {
+            if var dict = UserDefaults.standard.dictionary(forKey: Constants.kUserApperoDictionary) {
+                dict[userId] = newValue
+                UserDefaults.standard.setValue(dict, forKey: Constants.kUserApperoDictionary)
+            } else {
+                UserDefaults.standard.setValue([userId : newValue], forKey: Constants.kUserApperoDictionary)
+            }
+        }
+    }
+    
+    public var frustrationValue: Int {
         get {
             if let dict = UserDefaults.standard.dictionary(forKey: Constants.kUserApperoDictionary) as? [String: Int] {
                 return dict[userId] ?? 0
@@ -156,6 +211,8 @@ public class Appero {
     public func log(experience: Experience) {
         experienceValue += experience.rawValue
     }
+    
+    
     
     /// Call when the user has a meaningfully positive or negative interaction with your app. Use this when you want to define your own system for scoring your users interactions
     /// - Parameter points: a positive or negative number of points

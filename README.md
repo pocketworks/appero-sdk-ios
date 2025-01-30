@@ -101,6 +101,9 @@ if let hostingController = hostingController {
 }
 ```
 
+## Frustration Tracking
+
+Separate from the main experience tracking, Appero lets you track specific frustrations a user might encounter in their day to day use of your app. Frustrations are classified by a number of suggested types or can be custom. Examples of common frustrations a user might experience are getting no results from search query, encountering validation errors completing a form or being unable to complete a purchase.
 
 ## Basic Themeing of the UI
 
