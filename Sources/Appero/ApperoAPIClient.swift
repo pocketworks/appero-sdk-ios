@@ -23,7 +23,7 @@ struct ApperoAPIClient {
         case delete
     }
     
-    private static let apiBaseURL = URL(string: "https://appero-9cb920e9c096.herokuapp.com/api")!
+    private static let apiBaseURL = URL(string: "https://app.appero.co.uk/api/v1")!
     private static let session = URLSession(configuration: URLSessionConfiguration.default, delegate: nil, delegateQueue: nil)
     
     @discardableResult

@@ -181,6 +181,87 @@ private struct FeedbackView: View {
     }
 }
 
+@available(iOS 16, *)
+private struct FrustrationView: View {
+    
+    let kFeedbackLimit = 120
+    
+    let frustrationMessage: String
+    let onCancel: ()->(Void)
+    let onSubmit: (_ feedback: String)->(Void)
+    
+    @State var feedbackText: String = ""
+    
+    @FocusState private var feedbackFieldFocused: Bool
+    
+    var body: some View {
+        VStack() {
+            Spacer()
+            Text(frustrationMessage)
+                .font(Appero.instance.theme.headingFont)
+                .foregroundColor(Appero.instance.theme.primaryTextColor)
+                .lineLimit(2)
+                .multilineTextAlignment(.center)
+            Spacer()
+            Text("Would you mind telling us what went wrong?")
+                .font(Appero.instance.theme.bodyFont)
+                .foregroundColor(Appero.instance.theme.primaryTextColor)
+                .multilineTextAlignment(.center)
+            VStack() {
+                ZStack(alignment: .top) {
+                    RoundedRectangle(cornerRadius: 8.0)
+                        .foregroundColor(Appero.instance.theme.textFieldBackgroundColor)
+                    TextField(text: $feedbackText, prompt: Text("Share your thoughts here").foregroundColor(Appero.instance.theme.primaryTextColor.opacity(0.5)),
+                              axis: .vertical, label: {})
+                    .lineLimit(1...5)
+                    .foregroundColor(Appero.instance.theme.primaryTextColor)
+                    .font(Appero.instance.theme.bodyFont)
+                    .padding(.all)
+                    .accentColor(Appero.instance.theme.cursorColor)
+                    .onChange(of: feedbackText) { text in
+                        feedbackText = String(text.prefix(kFeedbackLimit))
+                    }
+                    .focused($feedbackFieldFocused)
+                }.onTapGesture {
+                        feedbackFieldFocused = true
+                }
+                HStack {
+                    Spacer()
+                    Text("\(feedbackText.count) / \(kFeedbackLimit)")
+                        .font(Appero.instance.theme.captionFont)
+                        .foregroundStyle(Appero.instance.theme.secondaryTextColor)
+                }
+                Spacer()
+                Button {
+                    onSubmit(feedbackText)
+                } label: {
+                    HStack() {
+                        Spacer()
+                        Text("Send feedback")
+                            .font(Appero.instance.theme.buttonFont)
+                            .foregroundStyle(Appero.instance.theme.buttonTextColor)
+                        Spacer()
+                    }
+                }
+                .buttonStyle(ApperoButtonStyle())
+                Button {
+                    onCancel()
+                } label: {
+                    HStack() {
+                        Spacer()
+                        Text("Not now")
+                            .font(Appero.instance.theme.buttonFont)
+                            .foregroundStyle(Appero.instance.theme.buttonColor)
+                        Spacer()
+                    }
+                }
+                .buttonStyle(ApperoTextButtonStyle())
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
 private struct ApperoButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -353,5 +434,10 @@ private struct ThanksView: View {
 
 @available(iOS 16, *)
 #Preview {
-    ApperoRatingView(productName: "Swift Preview")
+    FrustrationView(
+        frustrationMessage: "We noticed you couldn’t find what you were looking for 😥"
+    ) {
+    } onSubmit: { feedback in
+        
+    }
 }
