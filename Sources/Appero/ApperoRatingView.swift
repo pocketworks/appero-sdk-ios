@@ -12,24 +12,34 @@ public struct ApperoRatingView: View {
     
     enum ApperoPanel {
         case rating
+        case frustration
         case thanks
     }
     
     @Environment(\.presentationMode) var presentationMode
     
+    let frustrationMessage: String?
     let productName: String
     
-    @State var selectedPanelHeight = PresentationDetent.fraction(0.33)
-    @State var panelMode: ApperoPanel = .rating
+    @State private var selectedPanelHeight = PresentationDetent.fraction(0.33)
+    @State private var panelMode: ApperoPanel
+    @State private var rating: Int = 0
     
     private let ratingDetent = PresentationDetent.fraction(0.33)
     private let feedbackDetent = PresentationDetent.fraction(0.7)
     private let thanksDetent = PresentationDetent.fraction(0.25)
     
-    @State private var rating: Int = 0
     
     public init(productName: String) {
         self.productName = productName
+        self.frustrationMessage = nil
+        self.panelMode = .rating
+    }
+    
+    public init(productName: String, frustrationMessage: String) {
+        self.frustrationMessage = frustrationMessage
+        self.productName = productName
+        self.panelMode = .frustration
     }
     
     public var body: some View {
@@ -65,6 +75,17 @@ public struct ApperoRatingView: View {
                             Appero.instance.hasRatingBeenPrompted = true
                         })
                         .padding(.horizontal)
+                        
+                    case .frustration:
+                        
+                        FrustrationView(frustrationMessage: frustrationMessage!) {
+                            //
+                        } onSubmit: { feedback in
+                            Appero.instance.analyticsDelegate?.logApperoFrustration(feedback: feedback)
+                            self.rating = 1
+                            panelMode = .thanks
+                        }
+                        
                     case .thanks:
                         ThanksView(productName: productName, rating: rating) {
                             presentationMode.wrappedValue.dismiss()
@@ -433,10 +454,5 @@ private struct ThanksView: View {
 
 @available(iOS 16, *)
 #Preview {
-    FrustrationView(
-        frustrationMessage: "We noticed you couldn’t find what you were looking for 😥"
-    ) {
-    } onSubmit: { feedback in
-        
-    }
+    ApperoRatingView(productName: "Swift Preview", frustrationMessage: "We noticed something went wrong")
 }

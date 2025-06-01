@@ -10,6 +10,8 @@ import Foundation
 public protocol ApperoAnalyticsDelegate {
     /// Triggered when the user submits their feedback and rating
     func logApperoFeedback(rating: Int, feedback: String)
+    /// Triggered when the user submits their frustration reason
+    func logApperoFrustration(feedback: String)
     /// Triggered each time the user taps a different rating, allows you to capture some idea of user happiness even if they don't submit feedback
     func logRatingSelected(rating: Int)
 }

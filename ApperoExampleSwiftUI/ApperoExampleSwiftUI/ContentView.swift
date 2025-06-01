@@ -11,6 +11,7 @@ import Appero
 struct ContentView: View {
     
     @State private var showingAppero = false
+    @State private var negativeVibe = false
     @State private var theme = 0
     
     var body: some View {
@@ -44,15 +45,34 @@ struct ContentView: View {
                     Text("Tap here for Positive Vibes")
                 }
             })
+            Button(action: {
+                logNegativeVibes()
+            }, label: {
+                VStack() {
+                    Image(systemName: "star.slash")
+                        .imageScale(.large)
+                        .foregroundStyle(.tint)
+                    Text("Tap here for Negative Vibes")
+                }
+            })
             Spacer()
         }
         .padding()
         .sheet(isPresented: $showingAppero) {
-            ApperoRatingView(productName: "ApperoExampleSwiftUI")
+            if negativeVibe {
+                ApperoRatingView(productName: "ApperoExampleSwiftUI", frustrationMessage: "Negative vibes detected!")
+            } else {
+                ApperoRatingView(productName: "ApperoExampleSwiftUI")
+            }
         }
     }
     
+    func logNegativeVibes() {
+        negativeVibe = true
+    }
+    
     func logPositiveVibes() {
+        negativeVibe = false
         Appero.instance.log(experience: .strongPositive)
         showingAppero = Appero.instance.shouldShowAppero
     }

@@ -177,8 +177,6 @@ public class Appero {
         experienceValue += experience.rawValue
     }
     
-    
-    
     /// Call when the user has a meaningfully positive or negative interaction with your app. Use this when you want to define your own system for scoring your users interactions
     /// - Parameter points: a positive or negative number of points
     public func log(points: Int) {
