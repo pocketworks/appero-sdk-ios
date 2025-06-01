@@ -1,6 +1,6 @@
-//  ApperoTheme.swift
-//  ApperoExampleSwiftUI
 //
+//  ApperoTheme.swift
+//  Copyright Pocketworks Mobile Ltd.
 //  Created by Rory Prior on 28/05/2024.
 //
 

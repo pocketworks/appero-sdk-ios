@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		981790B22D5A3D6400687660 /* AmplitudeSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 981790B12D5A3D6400687660 /* AmplitudeSwift */; };
 		98729B5D2C014305007227F6 /* ApperoExampleSwiftUIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98729B5C2C014305007227F6 /* ApperoExampleSwiftUIApp.swift */; };
 		98729B612C014305007227F6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 98729B602C014305007227F6 /* Assets.xcassets */; };
 		98729B642C014305007227F6 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 98729B632C014305007227F6 /* Preview Assets.xcassets */; };
@@ -28,7 +27,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				981790B22D5A3D6400687660 /* AmplitudeSwift in Frameworks */,
 				98729B6C2C014369007227F6 /* Appero in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -91,7 +89,6 @@
 			name = ApperoExampleSwiftUI;
 			packageProductDependencies = (
 				98729B6B2C014369007227F6 /* Appero */,
-				981790B12D5A3D6400687660 /* AmplitudeSwift */,
 			);
 			productName = ApperoExampleSwiftUI;
 			productReference = 98729B592C014305007227F6 /* ApperoExampleSwiftUI.app */;
@@ -123,7 +120,6 @@
 			mainGroup = 98729B502C014305007227F6;
 			packageReferences = (
 				98729B6A2C014369007227F6 /* XCRemoteSwiftPackageReference "appero-sdk-ios" */,
-				981790B02D5A3D6400687660 /* XCRemoteSwiftPackageReference "Amplitude-Swift" */,
 			);
 			productRefGroup = 98729B5A2C014305007227F6 /* Products */;
 			projectDirPath = "";
@@ -360,14 +356,6 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		981790B02D5A3D6400687660 /* XCRemoteSwiftPackageReference "Amplitude-Swift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/amplitude/Amplitude-Swift";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
-			};
-		};
 		98729B6A2C014369007227F6 /* XCRemoteSwiftPackageReference "appero-sdk-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pocketworks/appero-sdk-ios";
@@ -379,11 +367,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		981790B12D5A3D6400687660 /* AmplitudeSwift */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 981790B02D5A3D6400687660 /* XCRemoteSwiftPackageReference "Amplitude-Swift" */;
-			productName = AmplitudeSwift;
-		};
 		98729B6B2C014369007227F6 /* Appero */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 98729B6A2C014369007227F6 /* XCRemoteSwiftPackageReference "appero-sdk-ios" */;

@@ -1,7 +1,6 @@
 //
-//  File.swift
-//  
-//
+//  ApperoAPIClient
+//  Copyright Pocketworks Mobile Ltd.
 //  Created by Rory Prior on 23/05/2024.
 //
 
@@ -26,11 +25,14 @@ struct ApperoAPIClient {
     private static let apiBaseURL = URL(string: "https://app.appero.co.uk/api/v1")!
     private static let session = URLSession(configuration: URLSessionConfiguration.default, delegate: nil, delegateQueue: nil)
     
+    
+    
     @discardableResult
-    static func sendRequest(endPoint: String, fields: [String: Any], method: ApperoAPIClient.Method) async throws -> Data {
+    static func sendRequest(endPoint: String, fields: [String: Any], method: ApperoAPIClient.Method, authorization: String) async throws -> Data {
 
         var request = URLRequest(url: ApperoAPIClient.apiBaseURL.appendingPathComponent(endPoint))
         request.httpMethod = method.rawValue.uppercased()
+        request.addValue("Bearer: " + authorization, forHTTPHeaderField: "Authorization")
         request.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: fields, options: [])
         

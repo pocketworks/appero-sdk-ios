@@ -1,6 +1,6 @@
 //
 //  ApperoAnalyticsDelegate.swift
-//
+//  Copyright Pocketworks Mobile Ltd.
 //  Created by Rory Prior on 31/05/2024.
 //
 

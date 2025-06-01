@@ -1,7 +1,6 @@
 //
 //  ApperoRatingView.swift
-//  ApperoExampleSwiftUI
-//
+//  Copyright Pocketworks Mobile Ltd.
 //  Created by Rory Prior on 25/05/2024.
 //
 

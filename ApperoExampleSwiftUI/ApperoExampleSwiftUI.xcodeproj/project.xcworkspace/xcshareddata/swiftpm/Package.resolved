@@ -1,24 +1,6 @@
 {
-  "originHash" : "95f1d6f12e8309bc2f214b4ad3b40f32767d60012c2a79c8973038dd33ecd82f",
+  "originHash" : "7e8bb14acab9aacd495d65ca73842ebbeb14714a042530a50a238e05218125a1",
   "pins" : [
-    {
-      "identity" : "amplitude-swift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/amplitude/Amplitude-Swift",
-      "state" : {
-        "revision" : "5da183dcd74cfb7422215a3033f6c91ad8cf6c65",
-        "version" : "1.11.5"
-      }
-    },
-    {
-      "identity" : "analytics-connector-ios",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/amplitude/analytics-connector-ios.git",
-      "state" : {
-        "revision" : "4adbfe85486e6dcdcdca5fa9362097ffe5ec712b",
-        "version" : "1.3.1"
-      }
-    },
     {
       "identity" : "appero-sdk-ios",
       "kind" : "remoteSourceControl",

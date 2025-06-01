@@ -214,11 +214,13 @@ public class Appero {
                 fields: [
                     "client_id" : clientId!,
                     "sent_at": Date().ISO8601Format(),
-                    "api_key" : apiKey!,
                     "feedback": feedback ?? "",
+                    "source" : UIDevice.current.systemName,
+                    "build_version" : Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
                     "rating": String(rating)
                 ],
-                method: .post
+                method: .post,
+                authorization: apiKey!
             )
             return true
         }
