@@ -10,8 +10,9 @@
 		98729B5D2C014305007227F6 /* ApperoExampleSwiftUIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98729B5C2C014305007227F6 /* ApperoExampleSwiftUIApp.swift */; };
 		98729B612C014305007227F6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 98729B602C014305007227F6 /* Assets.xcassets */; };
 		98729B642C014305007227F6 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 98729B632C014305007227F6 /* Preview Assets.xcassets */; };
-		98729B6C2C014369007227F6 /* Appero in Frameworks */ = {isa = PBXBuildFile; productRef = 98729B6B2C014369007227F6 /* Appero */; };
 		989043962C05CF6A00EB4375 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98729B5E2C014305007227F6 /* ContentView.swift */; };
+		98B7FB962DECF81C00C6FA74 /* Appero in Frameworks */ = {isa = PBXBuildFile; productRef = 98B7FB952DECF81C00C6FA74 /* Appero */; };
+		98B7FB992DECF89100C6FA74 /* Appero in Frameworks */ = {isa = PBXBuildFile; productRef = 98B7FB982DECF89100C6FA74 /* Appero */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,7 +28,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				98729B6C2C014369007227F6 /* Appero in Frameworks */,
+				98B7FB962DECF81C00C6FA74 /* Appero in Frameworks */,
+				98B7FB992DECF89100C6FA74 /* Appero in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -88,7 +90,8 @@
 			);
 			name = ApperoExampleSwiftUI;
 			packageProductDependencies = (
-				98729B6B2C014369007227F6 /* Appero */,
+				98B7FB952DECF81C00C6FA74 /* Appero */,
+				98B7FB982DECF89100C6FA74 /* Appero */,
 			);
 			productName = ApperoExampleSwiftUI;
 			productReference = 98729B592C014305007227F6 /* ApperoExampleSwiftUI.app */;
@@ -119,7 +122,7 @@
 			);
 			mainGroup = 98729B502C014305007227F6;
 			packageReferences = (
-				98729B6A2C014369007227F6 /* XCRemoteSwiftPackageReference "appero-sdk-ios" */,
+				98B7FB972DECF89100C6FA74 /* XCRemoteSwiftPackageReference "appero-sdk-ios" */,
 			);
 			productRefGroup = 98729B5A2C014305007227F6 /* Products */;
 			projectDirPath = "";
@@ -356,20 +359,24 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		98729B6A2C014369007227F6 /* XCRemoteSwiftPackageReference "appero-sdk-ios" */ = {
+		98B7FB972DECF89100C6FA74 /* XCRemoteSwiftPackageReference "appero-sdk-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/pocketworks/appero-sdk-ios";
 			requirement = {
-				branch = "feature/custom-assets-fonts";
+				branch = "feature/frustration-flow";
 				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		98729B6B2C014369007227F6 /* Appero */ = {
+		98B7FB952DECF81C00C6FA74 /* Appero */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 98729B6A2C014369007227F6 /* XCRemoteSwiftPackageReference "appero-sdk-ios" */;
+			productName = Appero;
+		};
+		98B7FB982DECF89100C6FA74 /* Appero */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 98B7FB972DECF89100C6FA74 /* XCRemoteSwiftPackageReference "appero-sdk-ios" */;
 			productName = Appero;
 		};
 /* End XCSwiftPackageProductDependency section */

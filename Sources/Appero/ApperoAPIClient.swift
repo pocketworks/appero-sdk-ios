@@ -32,7 +32,7 @@ struct ApperoAPIClient {
 
         var request = URLRequest(url: ApperoAPIClient.apiBaseURL.appendingPathComponent(endPoint))
         request.httpMethod = method.rawValue.uppercased()
-        request.addValue("Bearer: " + authorization, forHTTPHeaderField: "Authorization")
+        request.addValue("Bearer " + authorization, forHTTPHeaderField: "Authorization")
         request.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: fields, options: [])
         
