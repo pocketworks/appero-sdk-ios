@@ -1,4 +1,3 @@
-
 //
 //       /\
 //      /  \   _ __  _ __   ___ _ __ ___
@@ -17,6 +16,8 @@ import StoreKit
 
 public class Appero {
     
+    
+    
     public enum Experience: Int {
         case strongPositive = 5
         case mildPositive = 4
@@ -33,9 +34,28 @@ public class Appero {
         static let kUserExperienceValue = "appero_experience_value"
         static let kRatingThreshold = "appero_rating_threshold"
         static let kRatingPromptedDictionary = "appero_rating_prompted"
+        static let kFrustrationDictionary = "appero_frustration_dictionary"
         static let kFrustrationPromptedDictionary = "appero_frustration_prompted"
         
         static let kDefaultRatingThreshold = 10
+    }
+    
+    public struct Frustration: Codable {
+        /// The identifier should be unique
+        let identifier: String
+        /// Trigger threshold for showing the frustration feedback UI
+        let threshold: Int
+        /// Number of times this has been triggered
+        var events: Int
+        /// Has the frustration triggered the feedback UI?
+        var prompted: Bool
+        
+        init(identifier: String, threshold: Int) {
+            self.identifier = identifier
+            self.threshold = threshold
+            self.events = 0
+            self.prompted = false
+        }
     }
     
     // config constants
@@ -119,25 +139,6 @@ public class Appero {
         }
     }
     
-    /// Flag used to record if the current user has been prompted about a frustrating experience or not. This value will need to be set to false to allow the frustration prompt to appear.
-    public var hasFrustrationBeenPrompted: Bool {
-        get {
-            if let dict = UserDefaults.standard.dictionary(forKey: Constants.kRatingPromptedDictionary) as? [String: Bool] {
-                return dict[userId] ?? false
-            } else {
-                return false
-            }
-        }
-        set {
-            if var dict = UserDefaults.standard.dictionary(forKey: Constants.kRatingPromptedDictionary) {
-                dict[userId] = newValue
-                UserDefaults.standard.setValue(dict, forKey: Constants.kRatingPromptedDictionary)
-            } else {
-                UserDefaults.standard.setValue([userId : newValue], forKey: Constants.kRatingPromptedDictionary)
-            }
-        }
-    }
-    
     /// Flag to indicate if the Appero feedback prompt should be displayed based on whether the prompt has already been shown to this user and if they have crossed the experience point threshold.
     public var shouldShowAppero: Bool {
         return hasRatingBeenPrompted == false && experienceValue >= ratingThreshold
@@ -183,6 +184,60 @@ public class Appero {
         experienceValue += points
     }
     
+    /// Creates storage for the frustration
+    public func register(frustration: Appero.Frustration) {
+        var frustrations = getFrustrations()
+        // only register a frustration if one doesn't already exist for this identifier
+        if frustrations[frustration.identifier] == nil {
+            frustrations[frustration.identifier] = frustration
+            saveFrustrations(frustrations)
+        }
+    }
+    
+    /// Log an instance of a given frustration occuring
+    public func log(frustration identifier: String) {
+        var frustrations = getFrustrations()
+        if var existingFrustration = frustrations[identifier] {
+            existingFrustration.events += 1
+            frustrations[identifier] = existingFrustration
+            saveFrustrations(frustrations)
+        }
+    }
+    
+    /// Check if a given frustration has crossed the threshold value
+    public func isThresholdCrossed(for identifier: String) -> Bool {
+        if let storedFrustration = self.frustration(for: identifier) {
+            return storedFrustration.events >= storedFrustration.threshold
+        }
+        return false
+    }
+    
+    /// Mark a frustration as having triggered the feedback UI
+    public func markPrompted(frustration identifier: String) {
+        var frustrations = getFrustrations()
+        if var existingFrustration = frustrations[identifier] {
+            existingFrustration.prompted = true
+            frustrations[identifier] = existingFrustration
+            saveFrustrations(frustrations)
+        }
+    }
+    
+    /// Has a given frustration been prompted yet?
+    public func isPrompted(frustration identifier: String) -> Bool {
+        return frustration(for: identifier)?.prompted ?? false
+    }
+    
+    /// Reset all registered frustrations for the current user
+    public func resetAllFrustrations() {
+        saveFrustrations([:])
+    }
+
+    /// Look up a frustration that has been registered
+    public func frustration(for title: String) -> Frustration? {
+        let frustrations = getFrustrations()
+        return frustrations[title]
+    }
+    
     /// Convenience function for requesting an app store rating. We recommend letting Appero handle when this is called to maximise your chances of a positive rating.
     public func requestAppStoreRating() {
         #if os(macOS)
@@ -192,6 +247,33 @@ public class Appero {
             SKStoreReviewController.requestReview(in: scene)
         }
         #endif
+    }
+    
+    // MARK: - Private Helper Methods
+    
+    /// Get all frustrations for the current user from UserDefaults
+    private func getFrustrations() -> [String: Frustration] {
+        if let data = UserDefaults.standard.data(forKey: Constants.kFrustrationDictionary),
+           let userFrustrations = try? JSONDecoder().decode([String: [String: Frustration]].self, from: data) {
+            return userFrustrations[userId] ?? [:]
+        }
+        return [:]
+    }
+    
+    /// Save frustrations for the current user to UserDefaults
+    private func saveFrustrations(_ frustrations: [String: Frustration]) {
+        var allUserFrustrations: [String: [String: Frustration]] = [:]
+        
+        if let data = UserDefaults.standard.data(forKey: Constants.kFrustrationDictionary),
+           let existing = try? JSONDecoder().decode([String: [String: Frustration]].self, from: data) {
+            allUserFrustrations = existing
+        }
+        
+        allUserFrustrations[userId] = frustrations
+        
+        if let data = try? JSONEncoder().encode(allUserFrustrations) {
+            UserDefaults.standard.set(data, forKey: Constants.kFrustrationDictionary)
+        }
     }
     
     // MARK: - API Calls
@@ -245,4 +327,3 @@ public class Appero {
 extension Bundle {
     public static var appero: Bundle = .module
 }
-

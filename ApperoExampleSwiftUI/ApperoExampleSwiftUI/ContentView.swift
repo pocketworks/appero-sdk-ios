@@ -11,7 +11,7 @@ import Appero
 struct ContentView: View {
     
     @State private var showingAppero = false
-    @State private var negativeVibe = false
+    private var negativeVibe = false
     @State private var theme = 0
     
     var body: some View {
@@ -69,6 +69,7 @@ struct ContentView: View {
     
     func logNegativeVibes() {
         negativeVibe = true
+        showingAppero = true
     }
     
     func logPositiveVibes() {
