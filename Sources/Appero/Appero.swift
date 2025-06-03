@@ -204,7 +204,7 @@ public class Appero {
         }
     }
     
-    /// Check if a given frustration has crossed the threshold value
+    /// Check if a given frustration has crossed the threshold value. Generally you should ``needsPrompt(frustration:)`` instead of calling this directly.
     public func isThresholdCrossed(for identifier: String) -> Bool {
         if let storedFrustration = self.frustration(for: identifier) {
             return storedFrustration.events >= storedFrustration.threshold
@@ -222,7 +222,7 @@ public class Appero {
         }
     }
     
-    /// Has a given frustration been prompted yet?
+    /// Has a given frustration been prompted yet? Generally you should ``needsPrompt(frustration:)`` instead of calling this directly.
     public func isPrompted(frustration identifier: String) -> Bool {
         return frustration(for: identifier)?.prompted ?? false
     }
@@ -233,9 +233,16 @@ public class Appero {
     }
 
     /// Look up a frustration that has been registered
-    public func frustration(for title: String) -> Frustration? {
+    /// - Parameter identifier: identifier for the frustration
+    /// - Returns: the Frustration or nil if the identifier is unregistered
+    internal func frustration(for identifier: String) -> Frustration? {
         let frustrations = getFrustrations()
-        return frustrations[title]
+        return frustrations[identifier]
+    }
+    
+    /// Check if a given frustration needs to be prompted; for this to be true it must have reach the event threshold and not already have beeb prompted.
+    public func needsPrompt(frustration identifier: String) -> Bool {
+        return isThresholdCrossed(for: identifier) == true && isPrompted(frustration: identifier) == false
     }
     
     /// Convenience function for requesting an app store rating. We recommend letting Appero handle when this is called to maximise your chances of a positive rating.

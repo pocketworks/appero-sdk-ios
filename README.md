@@ -103,7 +103,33 @@ if let hostingController = hostingController {
 
 ## Frustration Tracking
 
-Separate from the main experience tracking, Appero lets you track specific frustrations a user might encounter in their day to day use of your app. Frustrations are classified by a number of suggested types or can be custom. Examples of common frustrations a user might experience are getting no results from search query, encountering validation errors completing a form or being unable to complete a purchase.
+Separate from the main experience tracking, Appero lets you track specific pain points a user might encounter in their day to day use of your app. For example you might want to trigger feedback if a user consistently fails to find a result when searching or if they specifically tap some UI like a thumbs down button on a suggestion.
+
+First register a frustration. Each frustration must have a unique identifier. This should be human readable and descriptive. You may find it's easier to define these as static constants somewhere as you'll want to use this identifier to log events and check if the threshold has been crossed.
+
+```        
+static let kNoResultsFrustration = "No search results found"
+
+Appero.instance.register(frustration: Appero.Frustration(
+    identifier: kNoResultsFrustration,
+    threshold: 3
+    ))
+```
+
+In this instance in our code when the user has performed a search and we've had no results returned we would trigger the log function on our Appero instance.
+
+```
+Appero.instance.log(frustration: kNoResultsFrustration)
+```
+
+To check whether it's time to present the frustration feedback prompt to the user we can simply call needsPrompt with the identifier of the frustration.
+
+```
+if Appero.instance.needsPrompt(frustration: kNoResultsFrustration) {
+    // present the frustration feedback prompt here
+}
+```
+
 
 ## Basic Themeing of the UI
 

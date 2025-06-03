@@ -45,6 +45,7 @@ final class ApperoFrustrationTests: XCTestCase {
         // given
         let frustration = Appero.Frustration(identifier: TestFrustrationIdentifiers.networkError, threshold: 2)
         Appero.instance.register(frustration: frustration)
+
         
         // when
         Appero.instance.log(frustration: frustration.identifier)
