@@ -59,10 +59,10 @@ struct ContentView: View {
         }
         .padding()
         .sheet(isPresented: $showingAppero) {
-            if negativeVibe {
-                ApperoRatingView(productName: "ApperoExampleSwiftUI", frustrationMessage: "Negative vibes detected!")
+            if Appero.instance.isThresholdCrossed(for: ApperoExampleSwiftUIApp.kFrustrationButtonTapped) {
+                ApperoFeedbackView(productName: "ApperoExampleSwiftUI", frustration: "Negative vibes detected!")
             } else {
-                ApperoRatingView(productName: "ApperoExampleSwiftUI")
+                ApperoFeedbackView(productName: "ApperoExampleSwiftUI")
             }
         }
     }

@@ -103,9 +103,9 @@ if let hostingController = hostingController {
 
 ## Frustration Tracking
 
-Separate from the main experience tracking, Appero lets you track specific pain points a user might encounter in their day to day use of your app to help you improve UX. For example you might want to trigger feedback if a user consistently fails to find a result when searching or if they specifically tap some UI like a thumbs down button on a suggestion or search result.
+Separate from the main experience tracking, Appero lets you track specific pain points a user might encounter in their day-to-day use of your app. For example, you might want to trigger feedback if a user consistently fails to find a result when searching or if they specifically tap some UI like a thumbs down button on a suggestion.
 
-Like user experience, frustrations are tracked per user. There is no limit on how many frustrations that can be registered. The frustration feedback prompt is intended to be triggered only once per registered frustration and then not again, however if necessary you can reset and reregister frustrations to circumvent this restriction. Remember if a user is having a bad time with a feature in your app, the last thing you want to do is to keep bombarding them with feedback requests about it!
+Like user experience, frustrations are tracked per-user. There is no limit on how many frustrations that can be registered. The frustration feedback prompt is intended to be triggered only once per registered frustration and then not again, however if necessary you can reset and reregister frustrations to circumvent this restriction. _Remember if a user is having a bad time with a feature in your app, the last thing you want to do is to keep bombarding them with feedback requests about it!_
 
 First register a frustration. Each frustration must have a unique identifier. This should be human readable and descriptive. You may find it's easier to define these as static constants somewhere as you'll want to use this identifier to log events and check if the threshold has been crossed. You can optionally specify a message that will appear when the frustration feedback prompt is triggered.
 
@@ -125,13 +125,15 @@ In this instance in our code when the user has performed a search and we've had 
 Appero.instance.log(frustration: kNoResultsFrustration)
 ```
 
-To check whether it's time to present the frustration feedback prompt to the user we can simply call needsPrompt with the identifier of the frustration.
+To check whether it's time to present the frustration feedback prompt to the user, we can simply call `needsPrompt` with the identifier of the frustration:
 
 ```
 if Appero.instance.needsPrompt(frustration: kNoResultsFrustration) {
     // present the frustration feedback prompt here
 }
 ```
+
+If the user dismisses the frustration feedback prompt the frustration will enter the deferred state. This is a fixed period of 30 days from the current date where the frustration can not be re-prompted.
 
 
 ## Basic Themeing of the UI

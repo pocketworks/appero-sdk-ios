@@ -8,7 +8,7 @@ import SwiftUI
 
 /// Provides the Appero feedback UI within a view to be displayed inside a modal sheet
 @available(iOS 16, *)
-public struct ApperoRatingView: View {
+public struct ApperoFeedbackView: View {
     
     enum ApperoPanel {
         case rating
@@ -18,7 +18,7 @@ public struct ApperoRatingView: View {
     
     @Environment(\.presentationMode) var presentationMode
     
-    let frustrationMessage: String?
+    let frustration: Appero.Frustration?
     let productName: String
     
     @State private var selectedPanelHeight = PresentationDetent.fraction(0.33)
@@ -32,12 +32,12 @@ public struct ApperoRatingView: View {
     
     public init(productName: String) {
         self.productName = productName
-        self.frustrationMessage = nil
+        self.frustration = nil
         self.panelMode = .rating
     }
     
-    public init(productName: String, frustrationMessage: String) {
-        self.frustrationMessage = frustrationMessage
+    public init(productName: String, frustration: Appero.Frustration) {
+        self.frustration = frustration
         self.productName = productName
         self.panelMode = .frustration
     }
@@ -78,7 +78,7 @@ public struct ApperoRatingView: View {
                         
                     case .frustration:
                         
-                        FrustrationView(frustrationMessage: frustrationMessage!) {
+                        FrustrationView(frustrationMessage: frustration!.userPrompt ?? "") {
                             //
                         } onSubmit: { feedback in
                             Appero.instance.analyticsDelegate?.logApperoFrustration(feedback: feedback)
@@ -363,7 +363,7 @@ public struct ApperoPresentationView: View {
         .sheet(isPresented: $presented, onDismiss: {
             onDismiss?()
         }) {
-            ApperoRatingView(productName: productName)
+            ApperoFeedbackView(productName: productName)
         }
     }
 }
@@ -454,5 +454,5 @@ private struct ThanksView: View {
 
 @available(iOS 16, *)
 #Preview {
-    ApperoRatingView(productName: "Swift Preview", frustrationMessage: "We noticed something went wrong")
+    ApperoFeedbackView(productName: "Swift Preview", frustration: Appero.Frustration(identifier: "frustration", threshold: 2, userPrompt: "We noticed something went wrong"))
 }
