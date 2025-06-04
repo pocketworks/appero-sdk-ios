@@ -22,7 +22,7 @@ The Appero SDK for iOS is based around a shared instance model that can be acces
 ```
 Appero.instance.start(
     apiKey: "your_api_key",
-    clientId: "your_client_id"
+    userId: "your_user_id"
 )
 ```
 
@@ -103,17 +103,20 @@ if let hostingController = hostingController {
 
 ## Frustration Tracking
 
-Separate from the main experience tracking, Appero lets you track specific pain points a user might encounter in their day to day use of your app. For example you might want to trigger feedback if a user consistently fails to find a result when searching or if they specifically tap some UI like a thumbs down button on a suggestion.
+Separate from the main experience tracking, Appero lets you track specific pain points a user might encounter in their day to day use of your app to help you improve UX. For example you might want to trigger feedback if a user consistently fails to find a result when searching or if they specifically tap some UI like a thumbs down button on a suggestion or search result.
 
-First register a frustration. Each frustration must have a unique identifier. This should be human readable and descriptive. You may find it's easier to define these as static constants somewhere as you'll want to use this identifier to log events and check if the threshold has been crossed.
+Like user experience, frustrations are tracked per user. There is no limit on how many frustrations that can be registered. The frustration feedback prompt is intended to be triggered only once per registered frustration and then not again, however if necessary you can reset and reregister frustrations to circumvent this restriction. Remember if a user is having a bad time with a feature in your app, the last thing you want to do is to keep bombarding them with feedback requests about it!
+
+First register a frustration. Each frustration must have a unique identifier. This should be human readable and descriptive. You may find it's easier to define these as static constants somewhere as you'll want to use this identifier to log events and check if the threshold has been crossed. You can optionally specify a message that will appear when the frustration feedback prompt is triggered.
 
 ```        
 static let kNoResultsFrustration = "No search results found"
 
 Appero.instance.register(frustration: Appero.Frustration(
     identifier: kNoResultsFrustration,
-    threshold: 3
-    ))
+    threshold: 3,
+    userPrompt: "We noticed you couldn't find what you were looking for"
+))
 ```
 
 In this instance in our code when the user has performed a search and we've had no results returned we would trigger the log function on our Appero instance.

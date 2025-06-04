@@ -13,7 +13,7 @@ final class ApperoFrustrationTests: XCTestCase {
     
     override func setUp() {
         super.setUp()
-        Appero.instance.start(apiKey: "api_id", clientId: "client_id")
+        Appero.instance.start(apiKey: "api_id", userId: "user_1")
         Appero.instance.resetUser()
         Appero.instance.resetAllFrustrations()
     }
@@ -23,12 +23,15 @@ final class ApperoFrustrationTests: XCTestCase {
         Appero.instance.resetAllFrustrations()
         UserDefaults.standard.setValue(nil, forKey: Appero.Constants.kUserIdKey)
         UserDefaults.standard.setValue(nil, forKey: Appero.Constants.kFrustrationDictionary)
-        UserDefaults.standard.setValue(nil, forKey: Appero.Constants.kFrustrationPromptedDictionary)
     }
     
     func testRegisterFrustration() {
         // given
-        let frustration = Appero.Frustration(identifier: TestFrustrationIdentifiers.loginFailed, threshold: 3)
+        let frustration = Appero.Frustration(
+            identifier: TestFrustrationIdentifiers.loginFailed,
+            threshold: 3,
+            userPrompt: "We noticed you're having trouble logging in"
+        )
         
         // when
         Appero.instance.register(frustration: frustration)

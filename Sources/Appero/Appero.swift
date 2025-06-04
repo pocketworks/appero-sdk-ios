@@ -16,18 +16,6 @@ import StoreKit
 
 public class Appero {
     
-    
-    
-    public enum Experience: Int {
-        case strongPositive = 5
-        case mildPositive = 4
-        case neutral = 3
-        case mildNegative = 2
-        case strongNegative = 1
-    }
-    
-    // default key constants
-    
     struct Constants {
         static let kUserIdKey = "appero_user_id"
         static let kUserApperoDictionary = "appero_user"
@@ -35,9 +23,16 @@ public class Appero {
         static let kRatingThreshold = "appero_rating_threshold"
         static let kRatingPromptedDictionary = "appero_rating_prompted"
         static let kFrustrationDictionary = "appero_frustration_dictionary"
-        static let kFrustrationPromptedDictionary = "appero_frustration_prompted"
         
         static let kDefaultRatingThreshold = 10
+    }
+    
+    public enum Experience: Int {
+        case strongPositive = 5
+        case mildPositive = 4
+        case neutral = 3
+        case mildNegative = 2
+        case strongNegative = 1
     }
     
     public struct Frustration: Codable {
@@ -49,10 +44,13 @@ public class Appero {
         var events: Int
         /// Has the frustration triggered the feedback UI?
         var prompted: Bool
+        /// Text shown to the user when prompting feedback
+        var userPrompt: String?
         
-        init(identifier: String, threshold: Int) {
+        init(identifier: String, threshold: Int, userPrompt: String? = nil) {
             self.identifier = identifier
             self.threshold = threshold
+            self.userPrompt = userPrompt
             self.events = 0
             self.prompted = false
         }
@@ -64,7 +62,6 @@ public class Appero {
 
     // instance vars
     private var apiKey: String?
-    private var clientId: String?
     
     /// Specifies a delegate to handle analytics
     public var analyticsDelegate: ApperoAnalyticsDelegate?
@@ -149,10 +146,12 @@ public class Appero {
     /// Initialise the Appero SDK. This should be called early on in your app's lifecycle.
     /// - Parameters:
     ///   - apiKey: your API key
-    ///   - clientId: your client ID
-    public func start(apiKey: String, clientId: String) {
+    ///   - userId: optional user identifier, if none provided one will be generated automatically
+    public func start(apiKey: String, userId: String?) {
         self.apiKey = apiKey
-        self.clientId = clientId
+        if let userId = userId {
+            setUserId(userId)
+        }
     }
     
     /// Allows a custom user identifier to be set, otherwise Appero will create its own unique user identifier. Identifiers persist until ``resetUser`` is called.
@@ -299,7 +298,7 @@ public class Appero {
             try await ApperoAPIClient.sendRequest(
                 endPoint: "feedback",
                 fields: [
-                    "client_id" : clientId!,
+                    "client_id" : userId,
                     "sent_at": Date().ISO8601Format(),
                     "feedback": feedback ?? "",
                     "source" : UIDevice.current.systemName,

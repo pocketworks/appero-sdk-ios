@@ -4,7 +4,7 @@ import XCTest
 final class ApperoTests: XCTestCase {
     
     override func setUp() {
-        Appero.instance.start(apiKey: "api_id", clientId: "client_id")
+        Appero.instance.start(apiKey: "api_id", userId: "user_1")
     }
     
     override class func tearDown() {
