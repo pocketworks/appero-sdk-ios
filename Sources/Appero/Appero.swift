@@ -22,7 +22,9 @@ public class Appero {
         static let kUserExperienceValue = "appero_experience_value"
         static let kRatingThreshold = "appero_rating_threshold"
         static let kRatingPromptedDictionary = "appero_rating_prompted"
+        static let kRatingPromptLastShownDictionary = "appero_rating_prompt_last_shown"
         static let kFrustrationDictionary = "appero_frustration_dictionary"
+        
         
         static let kDefaultRatingThreshold = 10
     }
@@ -46,6 +48,8 @@ public class Appero {
         var prompted: Bool
         /// Text shown to the user when prompting feedback
         var userPrompt: String?
+        /// If the user dismisses, the date we should next prompt for feedback
+        var nextPromptDate: Date?
         
         init(identifier: String, threshold: Int, userPrompt: String? = nil) {
             self.identifier = identifier
@@ -117,6 +121,24 @@ public class Appero {
         }
     }
     
+    var ratingPromptLastShown: Date? {
+        get {
+            if let dict = UserDefaults.standard.dictionary(forKey: Constants.kRatingPromptLastShownDictionary) as? [String: Date] {
+                return dict[userId]
+            } else {
+                return nil
+            }
+        }
+        set {
+            if var dict = UserDefaults.standard.dictionary(forKey: Constants.kRatingPromptLastShownDictionary) {
+                dict[userId] = newValue
+                UserDefaults.standard.setValue(dict, forKey: Constants.kRatingPromptLastShownDictionary)
+            } else {
+                UserDefaults.standard.setValue([userId : newValue], forKey: Constants.kRatingPromptLastShownDictionary)
+            }
+        }
+    }
+    
     /// Flag used to record if the current user has been prompted for their feedback or not. When this is true subsequent crossings of the experience point thresholds will not have an effect.
     public var hasRatingBeenPrompted: Bool {
         get {
@@ -140,8 +162,6 @@ public class Appero {
     public var shouldShowAppero: Bool {
         return hasRatingBeenPrompted == false && experienceValue >= ratingThreshold
     }
-    
-    // MARK: - Functions
     
     /// Initialise the Appero SDK. This should be called early on in your app's lifecycle.
     /// - Parameters:
@@ -171,6 +191,8 @@ public class Appero {
         experienceValue = 0
     }
     
+    // MARK: - Experience Logging
+    
     /// Call when the user has a meaningfully positive or negative interaction with your app.
     /// - Parameter experience: choose a rating on our Likert scale
     public func log(experience: Experience) {
@@ -182,6 +204,8 @@ public class Appero {
     public func log(points: Int) {
         experienceValue += points
     }
+    
+    // MARK: - Frustrations
     
     /// Creates storage for the frustration
     public func register(frustration: Appero.Frustration) {
@@ -226,6 +250,24 @@ public class Appero {
         return frustration(for: identifier)?.prompted ?? false
     }
     
+    /// Is the frustration deferred due to a previous dismissal?
+    public func isDeferred(frustration identifier: String) -> Bool {
+        guard let nextPromptDate = frustration(for: identifier)?.nextPromptDate else {
+            return false
+        }
+        return nextPromptDate > Date()
+    }
+    
+    /// If user dismissed a prompt without providing feedback, we can defer the prompt for 30 days and try again
+    public func deferPromptFor(frustration identifier: String) {
+        var frustrations = getFrustrations()
+        if var existingFrustration = frustrations[identifier] {
+            existingFrustration.nextPromptDate = Date(timeIntervalSinceNow: 86400 * 30) // 30 days from now
+            frustrations[identifier] = existingFrustration
+            saveFrustrations(frustrations)
+        }
+    }
+    
     /// Reset all registered frustrations for the current user
     public func resetAllFrustrations() {
         saveFrustrations([:])
@@ -239,10 +281,12 @@ public class Appero {
         return frustrations[identifier]
     }
     
-    /// Check if a given frustration needs to be prompted; for this to be true it must have reach the event threshold and not already have beeb prompted.
+    /// Check if a given frustration needs to be prompted; for this to be true it must have reach the event threshold and not already have beeb prompted and not within the deferral period if previously dismissed
     public func needsPrompt(frustration identifier: String) -> Bool {
-        return isThresholdCrossed(for: identifier) == true && isPrompted(frustration: identifier) == false
+        return isThresholdCrossed(for: identifier) == true && isPrompted(frustration: identifier) == false && isDeferred(frustration: identifier) == false
     }
+    
+    // MARK: - Miscellaneous Functions
     
     /// Convenience function for requesting an app store rating. We recommend letting Appero handle when this is called to maximise your chances of a positive rating.
     public func requestAppStoreRating() {

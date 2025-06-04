@@ -4,7 +4,7 @@ import XCTest
 final class ApperoFrustrationTests: XCTestCase {
     
     // MARK: - Test Constants
-    private struct TestFrustrationIdentifiers {
+    private struct TestFrustrations {
         static let loginFailed = "Login Failed"
         static let networkError = "Network Error"
         static let appCrash = "App Crash"
@@ -28,7 +28,7 @@ final class ApperoFrustrationTests: XCTestCase {
     func testRegisterFrustration() {
         // given
         let frustration = Appero.Frustration(
-            identifier: TestFrustrationIdentifiers.loginFailed,
+            identifier: TestFrustrations.loginFailed,
             threshold: 3,
             userPrompt: "We noticed you're having trouble logging in"
         )
@@ -37,16 +37,16 @@ final class ApperoFrustrationTests: XCTestCase {
         Appero.instance.register(frustration: frustration)
         
         // then
-        let retrievedFrustration = Appero.instance.frustration(for: TestFrustrationIdentifiers.loginFailed)
+        let retrievedFrustration = Appero.instance.frustration(for: TestFrustrations.loginFailed)
         XCTAssertNotNil(retrievedFrustration)
-        XCTAssertEqual(retrievedFrustration?.identifier, TestFrustrationIdentifiers.loginFailed)
+        XCTAssertEqual(retrievedFrustration?.identifier, TestFrustrations.loginFailed)
         XCTAssertEqual(retrievedFrustration?.threshold, 3)
         XCTAssertEqual(retrievedFrustration?.events, 0)
     }
     
     func testLogFrustration() {
         // given
-        let frustration = Appero.Frustration(identifier: TestFrustrationIdentifiers.networkError, threshold: 2)
+        let frustration = Appero.Frustration(identifier: TestFrustrations.networkError, threshold: 2)
         Appero.instance.register(frustration: frustration)
 
         
@@ -55,7 +55,7 @@ final class ApperoFrustrationTests: XCTestCase {
         Appero.instance.log(frustration: frustration.identifier)
         
         // then
-        let retrievedFrustration = Appero.instance.frustration(for: TestFrustrationIdentifiers.networkError)
+        let retrievedFrustration = Appero.instance.frustration(for: TestFrustrations.networkError)
         XCTAssertEqual(retrievedFrustration?.events, 2)
     }
     
@@ -73,7 +73,7 @@ final class ApperoFrustrationTests: XCTestCase {
     
     func testThresholdCrossed() {
         // given
-        let frustration = Appero.Frustration(identifier: TestFrustrationIdentifiers.appCrash, threshold: 2)
+        let frustration = Appero.Frustration(identifier: TestFrustrations.appCrash, threshold: 2)
         Appero.instance.register(frustration: frustration)
         
         // when
@@ -88,7 +88,7 @@ final class ApperoFrustrationTests: XCTestCase {
     
     func testThresholdExceeded() {
         // given
-        let frustration = Appero.Frustration(identifier: TestFrustrationIdentifiers.slowLoading, threshold: 2)
+        let frustration = Appero.Frustration(identifier: TestFrustrations.slowLoading, threshold: 2)
         Appero.instance.register(frustration: frustration)
         
         // when
@@ -98,14 +98,14 @@ final class ApperoFrustrationTests: XCTestCase {
         
         // then
         XCTAssertTrue(Appero.instance.isThresholdCrossed(for: frustration.identifier))
-        let retrievedFrustration = Appero.instance.frustration(for: TestFrustrationIdentifiers.slowLoading)
+        let retrievedFrustration = Appero.instance.frustration(for: TestFrustrations.slowLoading)
         XCTAssertEqual(retrievedFrustration?.events, 3)
     }
     
     func testResetAllFrustrations() {
         // given
-        let frustration1 = Appero.Frustration(identifier: TestFrustrationIdentifiers.loginFailed, threshold: 1)
-        let frustration2 = Appero.Frustration(identifier: TestFrustrationIdentifiers.networkError, threshold: 2)
+        let frustration1 = Appero.Frustration(identifier: TestFrustrations.loginFailed, threshold: 1)
+        let frustration2 = Appero.Frustration(identifier: TestFrustrations.networkError, threshold: 2)
         Appero.instance.register(frustration: frustration1)
         Appero.instance.register(frustration: frustration2)
         Appero.instance.log(frustration: frustration1.identifier)
@@ -115,15 +115,15 @@ final class ApperoFrustrationTests: XCTestCase {
         Appero.instance.resetAllFrustrations()
         
         // then
-        XCTAssertNil(Appero.instance.frustration(for: TestFrustrationIdentifiers.loginFailed))
-        XCTAssertNil(Appero.instance.frustration(for: TestFrustrationIdentifiers.networkError))
+        XCTAssertNil(Appero.instance.frustration(for: TestFrustrations.loginFailed))
+        XCTAssertNil(Appero.instance.frustration(for: TestFrustrations.networkError))
     }
     
     func testFrustrationPerUser() {
         // given
         let userA = "user_a"
         let userB = "user_b"
-        let frustration = Appero.Frustration(identifier: TestFrustrationIdentifiers.appCrash, threshold: 1)
+        let frustration = Appero.Frustration(identifier: TestFrustrations.appCrash, threshold: 1)
         
         // setup user A
         Appero.instance.setUserId(userA)
@@ -135,23 +135,23 @@ final class ApperoFrustrationTests: XCTestCase {
         Appero.instance.setUserId(userB)
         
         // then user B should not see user A's frustrations
-        XCTAssertNil(Appero.instance.frustration(for: TestFrustrationIdentifiers.appCrash))
+        XCTAssertNil(Appero.instance.frustration(for: TestFrustrations.appCrash))
         
         // when switching back to user A
         Appero.instance.resetUser()
         Appero.instance.setUserId(userA)
         
         // then user A's frustrations should be restored
-        let retrievedFrustration = Appero.instance.frustration(for: TestFrustrationIdentifiers.appCrash)
+        let retrievedFrustration = Appero.instance.frustration(for: TestFrustrations.appCrash)
         XCTAssertNotNil(retrievedFrustration)
         XCTAssertEqual(retrievedFrustration?.events, 1)
     }
     
     func testMultipleFrustrations() {
         // given
-        let loginFrustration = Appero.Frustration(identifier: TestFrustrationIdentifiers.loginFailed, threshold: 3)
-        let networkFrustration = Appero.Frustration(identifier: TestFrustrationIdentifiers.networkError, threshold: 2)
-        let crashFrustration = Appero.Frustration(identifier: TestFrustrationIdentifiers.appCrash, threshold: 1)
+        let loginFrustration = Appero.Frustration(identifier: TestFrustrations.loginFailed, threshold: 3)
+        let networkFrustration = Appero.Frustration(identifier: TestFrustrations.networkError, threshold: 2)
+        let crashFrustration = Appero.Frustration(identifier: TestFrustrations.appCrash, threshold: 1)
         
         // when
         Appero.instance.register(frustration: loginFrustration)
@@ -168,12 +168,137 @@ final class ApperoFrustrationTests: XCTestCase {
         XCTAssertTrue(Appero.instance.isThresholdCrossed(for: networkFrustration.identifier))
         XCTAssertTrue(Appero.instance.isThresholdCrossed(for: crashFrustration.identifier))
         
-        let retrievedLogin = Appero.instance.frustration(for: TestFrustrationIdentifiers.loginFailed)
-        let retrievedNetwork = Appero.instance.frustration(for: TestFrustrationIdentifiers.networkError)
-        let retrievedCrash = Appero.instance.frustration(for: TestFrustrationIdentifiers.appCrash)
+        let retrievedLogin = Appero.instance.frustration(for: TestFrustrations.loginFailed)
+        let retrievedNetwork = Appero.instance.frustration(for: TestFrustrations.networkError)
+        let retrievedCrash = Appero.instance.frustration(for: TestFrustrations.appCrash)
         
         XCTAssertEqual(retrievedLogin?.events, 1)
         XCTAssertEqual(retrievedNetwork?.events, 2)
         XCTAssertEqual(retrievedCrash?.events, 1)
+    }
+    
+    func testMarkPrompted() {
+        // given
+        let frustration = Appero.Frustration(identifier: TestFrustrations.loginFailed, threshold: 1)
+        Appero.instance.register(frustration: frustration)
+        
+        // when
+        Appero.instance.markPrompted(frustration: frustration.identifier)
+        
+        // then
+        XCTAssertTrue(Appero.instance.isPrompted(frustration: frustration.identifier))
+        let retrievedFrustration = Appero.instance.frustration(for: TestFrustrations.loginFailed)
+        XCTAssertEqual(retrievedFrustration?.prompted, true)
+    }
+    
+    func testIsPrompted() {
+        // given
+        let frustration = Appero.Frustration(identifier: TestFrustrations.networkError, threshold: 1)
+        Appero.instance.register(frustration: frustration)
+        
+        // then initially not prompted
+        XCTAssertFalse(Appero.instance.isPrompted(frustration: frustration.identifier))
+        
+        // when marked as prompted
+        Appero.instance.markPrompted(frustration: frustration.identifier)
+        
+        // then should be prompted
+        XCTAssertTrue(Appero.instance.isPrompted(frustration: frustration.identifier))
+    }
+    
+    func testIsPromptedNonExistent() {
+        // when checking non-existent frustration
+        let isPrompted = Appero.instance.isPrompted(frustration: "Non Existent")
+        
+        // then should return false
+        XCTAssertFalse(isPrompted)
+    }
+    
+    func testDeferPromptFor() {
+        // given
+        let frustration = Appero.Frustration(identifier: TestFrustrations.appCrash, threshold: 1)
+        Appero.instance.register(frustration: frustration)
+        
+        // when deferring the prompt
+        Appero.instance.deferPromptFor(frustration: frustration.identifier)
+        
+        // then should be deferred
+        XCTAssertTrue(Appero.instance.isDeferred(frustration: frustration.identifier))
+        let retrievedFrustration = Appero.instance.frustration(for: TestFrustrations.appCrash)
+        XCTAssertNotNil(retrievedFrustration?.nextPromptDate)
+        XCTAssertTrue(retrievedFrustration!.nextPromptDate! > Date())
+    }
+    
+    func testIsDeferred() {
+        // given
+        let frustration = Appero.Frustration(identifier: TestFrustrations.slowLoading, threshold: 1)
+        Appero.instance.register(frustration: frustration)
+        
+        // then initially not deferred
+        XCTAssertFalse(Appero.instance.isDeferred(frustration: frustration.identifier))
+        
+        // when deferred
+        Appero.instance.deferPromptFor(frustration: frustration.identifier)
+        
+        // then should be deferred
+        XCTAssertTrue(Appero.instance.isDeferred(frustration: frustration.identifier))
+    }
+    
+    func testIsDeferredNonExistent() {
+        // when checking non-existent frustration
+        let isDeferred = Appero.instance.isDeferred(frustration: "Non Existent")
+        
+        // then should return false (distant past < current date)
+        XCTAssertFalse(isDeferred)
+    }
+    
+    func testNeedsPrompt() {
+        // given
+        let frustration = Appero.Frustration(identifier: TestFrustrations.loginFailed, threshold: 2)
+        Appero.instance.register(frustration: frustration)
+        
+        // when threshold not crossed
+        XCTAssertFalse(Appero.instance.needsPrompt(frustration: frustration.identifier))
+        
+        // when threshold crossed but not prompted
+        Appero.instance.log(frustration: frustration.identifier)
+        Appero.instance.log(frustration: frustration.identifier)
+        XCTAssertTrue(Appero.instance.needsPrompt(frustration: frustration.identifier))
+        
+        // when already prompted
+        Appero.instance.markPrompted(frustration: frustration.identifier)
+        XCTAssertFalse(Appero.instance.needsPrompt(frustration: frustration.identifier))
+    }
+    
+    func testNeedsPromptWithDeferred() {
+        // given
+        let frustration = Appero.Frustration(identifier: TestFrustrations.networkError, threshold: 1)
+        Appero.instance.register(frustration: frustration)
+        
+        // when threshold crossed and deferred
+        Appero.instance.log(frustration: frustration.identifier)
+        Appero.instance.deferPromptFor(frustration: frustration.identifier)
+        
+        // then should not need prompt (deferred)
+        XCTAssertFalse(Appero.instance.needsPrompt(frustration: frustration.identifier))
+    }
+    
+    func testRegisterExistingFrustration() {
+        // given
+        let frustration1 = Appero.Frustration(identifier: TestFrustrations.appCrash, threshold: 1, userPrompt: "First prompt")
+        let frustration2 = Appero.Frustration(identifier: TestFrustrations.appCrash, threshold: 5, userPrompt: "Second prompt")
+        
+        // when registering first frustration
+        Appero.instance.register(frustration: frustration1)
+        Appero.instance.log(frustration: frustration1.identifier)
+        
+        // when trying to register another with same identifier
+        Appero.instance.register(frustration: frustration2)
+        
+        // then original frustration should remain unchanged
+        let retrievedFrustration = Appero.instance.frustration(for: TestFrustrations.appCrash)
+        XCTAssertEqual(retrievedFrustration?.threshold, 1)
+        XCTAssertEqual(retrievedFrustration?.userPrompt, "First prompt")
+        XCTAssertEqual(retrievedFrustration?.events, 1)
     }
 }
