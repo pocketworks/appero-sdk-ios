@@ -18,8 +18,8 @@ public struct ApperoFeedbackView: View {
     
     @Environment(\.presentationMode) var presentationMode
     
-    let frustration: Appero.Frustration?
     let productName: String
+    let strings: Appero.FeedbackUIStrings
     
     @State private var selectedPanelHeight = PresentationDetent.fraction(0.33)
     @State private var panelMode: ApperoPanel
@@ -32,14 +32,8 @@ public struct ApperoFeedbackView: View {
     
     public init(productName: String) {
         self.productName = productName
-        self.frustration = nil
         self.panelMode = .rating
-    }
-    
-    public init(productName: String, frustration: Appero.Frustration) {
-        self.frustration = frustration
-        self.productName = productName
-        self.panelMode = .frustration
+        self.strings = Appero.instance.feedbackUIStrings
     }
     
     public var body: some View {
@@ -59,7 +53,7 @@ public struct ApperoFeedbackView: View {
                 
                 switch panelMode {
                     case .rating:
-                        FeedbackView(productName: productName, onRatingChosen: { rating in
+                        FeedbackView(productName: productName, strings: Appero.instance.feedbackUIStrings, onRatingChosen: { rating in
                             selectedPanelHeight = feedbackDetent
                         }, onSubmit: { rating, feedback in
                             Task {
@@ -72,16 +66,16 @@ public struct ApperoFeedbackView: View {
                             self.rating = rating
                             panelMode = .thanks
                             selectedPanelHeight = rating > 3 ? ratingDetent : thanksDetent
-                            Appero.instance.hasRatingBeenPrompted = true
+                            Appero.instance.shouldShowFeedbackPrompt = false
                         })
                         .padding(.horizontal)
                         
                     case .frustration:
                         
-                        FrustrationView(frustrationMessage: frustration!.userPrompt ?? "") {
+                        FrustrationView(strings: Appero.instance.feedbackUIStrings) {
                             //
                         } onSubmit: { feedback in
-                            Appero.instance.analyticsDelegate?.logApperoFrustration(feedback: feedback)
+                            Appero.instance.analyticsDelegate?.logApperoFeedback(rating: 1, feedback: feedback)
                             self.rating = 1
                             panelMode = .thanks
                         }
@@ -108,6 +102,7 @@ private struct FeedbackView: View {
     let kFeedbackLimit = 120
     
     let productName: String
+    let strings: Appero.FeedbackUIStrings
     let onRatingChosen: (_ rating: Int)->(Void)
     let onSubmit: (_ rating: Int, _ feedback: String)->(Void)
     
@@ -120,13 +115,13 @@ private struct FeedbackView: View {
     var body: some View {
         VStack() {
             Spacer()
-            Text("We’re happy to see that you’re using \(productName) 🎉")
+            Text(strings.title)
                 .font(Appero.instance.theme.headingFont)
                 .foregroundColor(Appero.instance.theme.primaryTextColor)
                 .lineLimit(2)
                 .multilineTextAlignment(.center)
             Spacer()
-            Text("Let us know how we’re doing")
+            Text(strings.subtitle)
                 .font(Appero.instance.theme.bodyFont)
                 .padding(.leading)
                 .padding(.trailing)
@@ -139,7 +134,7 @@ private struct FeedbackView: View {
             })
             Spacer()
             if showFeedbackForm {
-                Text(promptText)
+                Text(strings.prompt)
                     .multilineTextAlignment(.center)
                     .font(Appero.instance.theme.bodyFont)
                     .foregroundColor(Appero.instance.theme.primaryTextColor)
@@ -147,7 +142,7 @@ private struct FeedbackView: View {
                     ZStack(alignment: .top) {
                         RoundedRectangle(cornerRadius: 8.0)
                             .foregroundColor(Appero.instance.theme.textFieldBackgroundColor)
-                        TextField(text: $feedbackText, prompt: Text("Share your thoughts here").foregroundColor(Appero.instance.theme.primaryTextColor.opacity(0.5)),
+                        TextField(text: $feedbackText, prompt: Text(strings.prompt).foregroundColor(Appero.instance.theme.primaryTextColor.opacity(0.5)),
                                   axis: .vertical, label: {})
                         .lineLimit(1...5)
                         .foregroundColor(Appero.instance.theme.primaryTextColor)
@@ -206,7 +201,7 @@ private struct FrustrationView: View {
     
     let kFeedbackLimit = 120
     
-    let frustrationMessage: String
+    let strings: Appero.FeedbackUIStrings
     let onCancel: ()->(Void)
     let onSubmit: (_ feedback: String)->(Void)
     
@@ -217,13 +212,13 @@ private struct FrustrationView: View {
     var body: some View {
         VStack() {
             Spacer()
-            Text(frustrationMessage)
+            Text(strings.title)
                 .font(Appero.instance.theme.headingFont)
                 .foregroundColor(Appero.instance.theme.primaryTextColor)
                 .lineLimit(2)
                 .multilineTextAlignment(.center)
             Spacer()
-            Text("Would you mind telling us what went wrong?")
+            Text(strings.title)
                 .font(Appero.instance.theme.bodyFont)
                 .foregroundColor(Appero.instance.theme.primaryTextColor)
                 .multilineTextAlignment(.center)
@@ -231,7 +226,7 @@ private struct FrustrationView: View {
                 ZStack(alignment: .top) {
                     RoundedRectangle(cornerRadius: 8.0)
                         .foregroundColor(Appero.instance.theme.textFieldBackgroundColor)
-                    TextField(text: $feedbackText, prompt: Text("Share your thoughts here").foregroundColor(Appero.instance.theme.primaryTextColor.opacity(0.5)),
+                    TextField(text: $feedbackText, prompt: Text(strings.prompt).foregroundColor(Appero.instance.theme.primaryTextColor.opacity(0.5)),
                               axis: .vertical, label: {})
                     .lineLimit(1...5)
                     .foregroundColor(Appero.instance.theme.primaryTextColor)
@@ -363,7 +358,10 @@ public struct ApperoPresentationView: View {
         .sheet(isPresented: $presented, onDismiss: {
             onDismiss?()
         }) {
-            ApperoFeedbackView(productName: productName)
+            let strings = Appero.instance.feedbackUIStrings
+            ApperoFeedbackView(
+                productName: productName
+            )
         }
     }
 }
@@ -454,5 +452,5 @@ private struct ThanksView: View {
 
 @available(iOS 16, *)
 #Preview {
-    ApperoFeedbackView(productName: "Swift Preview", frustration: Appero.Frustration(identifier: "frustration", threshold: 2, userPrompt: "We noticed something went wrong"))
+    
 }

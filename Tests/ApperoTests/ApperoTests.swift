@@ -82,7 +82,7 @@ final class ApperoTests: XCTestCase {
         Appero.instance.log(experience: .mildNegative)
         Appero.instance.log(experience: .strongNegative)
         // then
-        XCTAssertEqual(Appero.instance.experienceValue, Appero.Experience.strongPositive.rawValue + Appero.Experience.mildPositive.rawValue + Appero.Experience.neutral.rawValue + Appero.Experience.mildNegative.rawValue + Appero.Experience.strongNegative.rawValue)
+        XCTAssertEqual(Appero.instance.experienceValue, Appero.ExperienceRating.strongPositive.rawValue + Appero.ExperienceRating.mildPositive.rawValue + Appero.ExperienceRating.neutral.rawValue + Appero.ExperienceRating.mildNegative.rawValue + Appero.ExperienceRating.strongNegative.rawValue)
     }
     
     func testSwitchingUserIds() {
@@ -100,7 +100,7 @@ final class ApperoTests: XCTestCase {
         print(Array(UserDefaults.standard.dictionaryRepresentation()))
         // then
         XCTAssertEqual(Appero.instance.userId, userB)
-        XCTAssertEqual(Appero.instance.experienceValue, Appero.Experience.strongNegative.rawValue)
+        XCTAssertEqual(Appero.instance.experienceValue, Appero.ExperienceRating.strongNegative.rawValue)
     }
     
     func testRestoringUserId() {
@@ -119,7 +119,7 @@ final class ApperoTests: XCTestCase {
         Appero.instance.resetUser()
         Appero.instance.setUserId(userA)
         // then
-        XCTAssertEqual(Appero.instance.experienceValue, Appero.Experience.strongPositive.rawValue)
+        XCTAssertEqual(Appero.instance.experienceValue, Appero.ExperienceRating.strongPositive.rawValue)
     }
     
     func testLoggingPoints() {
