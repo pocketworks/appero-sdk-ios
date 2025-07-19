@@ -47,9 +47,21 @@ public class Appero {
         }
     }
     
+    public struct QueuedFeedback: Codable, Equatable {
+        let date: Date
+        let rating: Int
+        let feedback: String?
+        
+        static public func == (lhs: QueuedFeedback, rhs: QueuedFeedback) -> Bool {
+            lhs.date == rhs.date && lhs.rating == rhs.rating && lhs.feedback == rhs.feedback
+        }
+    }
+    
     private struct ApperoData: Codable {
         /// stores any experiences we've been unable to log with the backend due to network issues
         var unsentExperiences: [Experience]
+        /// stores any feedback we've been unable to submit with the backend due to network issues
+        var unsentFeedback: [QueuedFeedback]
         /// set to true when we're notified by the backend that the feedback UI is ready for display, can be used to defer display
         var feedbackPromptShouldDisplay: Bool
         /// caches the text for the feedback UI for when the prompt is deferred
@@ -107,6 +119,9 @@ public class Appero {
     private var retryTimer: Timer?
     private var isConnected = true
     
+    /// For testing purposes - when set to true, forces offline queuing behavior regardless of actual network status
+    public var forceOfflineMode = false
+    
     private init() {
         setupNetworkMonitoring()
         startRetryTimer()
@@ -154,6 +169,7 @@ public class Appero {
                 // Return default ApperoData if none exists
                 return ApperoData(
                     unsentExperiences: [],
+                    unsentFeedback: [],
                     feedbackPromptShouldDisplay: false,
                     feedbackUIStrings: FeedbackUIStrings(
                         title: Constants.defaultTitle,
@@ -173,6 +189,7 @@ public class Appero {
                 // Return default ApperoData if decoding fails
                 return ApperoData(
                     unsentExperiences: [],
+                    unsentFeedback: [],
                     feedbackPromptShouldDisplay: false,
                     feedbackUIStrings: FeedbackUIStrings(
                         title: Constants.defaultTitle,
@@ -195,29 +212,25 @@ public class Appero {
         }
     }
  
-    /// Resets all local data (queued experiences, user ID etc). You might use this when the user logs out or when testing your integration, however in typical use it's not required.
-    public func reset() {
-        // Clear all UserDefaults keys
-        UserDefaults.standard.removeObject(forKey: Constants.kUserIdKey)
-        UserDefaults.standard.removeObject(forKey: Constants.kApperoData)
-        UserDefaults.standard.removeObject(forKey: Constants.kUserApperoDictionary)
-        
-        // Clear instance variables
-        self.clientId = nil
-    }
-    
+
     // MARK: - Network Monitoring
     
     /// Sets up network path monitoring to track connectivity status
     private func setupNetworkMonitoring() {
         networkMonitor.pathUpdateHandler = { [weak self] path in
             DispatchQueue.main.async {
-                self?.isConnected = path.status == .satisfied
+                
+                guard let self = self else {
+                    return
+                }
+                
+                self.isConnected = path.status == .satisfied && !self.forceOfflineMode ?? false
                 
                 // If we regain connectivity and have unsent experiences, try to send them immediately
-                if self?.isConnected == true {
+                if self.isConnected == true {
                     Task {
-                        await self?.processUnsentExperiences()
+                        await self.processUnsentExperiences()
+                        await self.processUnsentFeedback()
                     }
                 }
             }
@@ -230,6 +243,7 @@ public class Appero {
         retryTimer = Timer.scheduledTimer(withTimeInterval: Constants.retryTimerInterval, repeats: true) { [weak self] _ in
             Task {
                 await self?.processUnsentExperiences()
+                await self?.processUnsentFeedback()
             }
         }
     }
@@ -254,81 +268,6 @@ public class Appero {
         }
     }
     
-    // MARK: - Experience API Communication
-    
-    /// Sends an experience to the backend, queuing it if the request fails
-    /// - Parameter experience: The experience to send
-    private func postExperience(_ experience: Experience) async {
-        guard let apiKey = apiKey, let clientId = clientId else {
-            print("[Appero] Cannot send experience - API key or client ID not set")
-            queueExperience(experience)
-            return
-        }
-        
-        // Check basic connectivity before attempting to send
-        guard isConnected else {
-            print("[Appero] No network connectivity - queuing experience")
-            queueExperience(experience)
-            return
-        }
-        
-        do {
-            let experienceData: [String: Any] = [
-                "client_id": clientId,
-                "date": experience.date.ISO8601Format(),
-                "value": experience.value.rawValue,
-                "context": experience.context ?? "",
-                "source": UIDevice.current.systemName,
-                "build_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
-            ]
-            
-            let data = try await ApperoAPIClient.sendRequest(
-                endPoint: "experience",
-                fields: experienceData,
-                method: .post,
-                authorization: apiKey
-            )
-            
-            handleExperienceResponse(response: try JSONDecoder().decode(ExperienceResponse.self, from: data))
-            
-        } catch let error as ApperoAPIError {
-            print("[Appero] Failed to send experience - queuing for retry")
-            
-            switch error {
-            case .networkError(statusCode: let code):
-                print("[Appero] Network error \(code)")
-            case .noData:
-                print("[Appero] No data received")
-            case .noResponse:
-                print("[Appero] No response received")
-            }
-            
-            queueExperience(experience)
-            
-        } catch {
-            print("[Appero] Unknown error sending experience - queuing for retry: \(error)")
-            queueExperience(experience)
-        }
-    }
-    
-    private func handleExperienceResponse(response: ExperienceResponse) {
-        
-        var currentData = data
-        
-        // We won't let subsequent responses flip the value here if we're currently due to show the UI
-        if currentData.feedbackPromptShouldDisplay == false {
-            currentData.feedbackPromptShouldDisplay = response.shouldShowFeedbackUI
-        }
-        currentData.feedbackUIStrings = response.feedbackUI ?? FeedbackUIStrings(
-            title: Constants.defaultTitle,
-            subtitle: Constants.defaultSubtitle,
-            prompt: Constants.defaultPrompt
-        )
-        currentData.flowType = response.flowType
-        
-        data = currentData
-    }
-    
     /// Adds an experience to the unsent queue
     /// - Parameter experience: The experience to queue
     private func queueExperience(_ experience: Experience) {
@@ -341,7 +280,7 @@ public class Appero {
     
     /// Processes all queued experiences, attempting to send them to the backend
     private func processUnsentExperiences() async {
-        guard isConnected else {
+        guard isConnected && !forceOfflineMode else {
             print("[Appero] No connectivity - skipping unsent experience processing")
             return
         }
@@ -394,20 +333,196 @@ public class Appero {
         
         data = currentData
     }
-
-    // MARK: - Miscellaneous Functions
     
-    /// Convenience function for requesting an app store rating. We recommend letting Appero handle when this is called to maximise your chances of a positive rating.
-    public func requestAppStoreRating() {
-        #if os(macOS)
-        SKStoreReviewController.requestReview()
-        #else
-        if let scene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
-            SKStoreReviewController.requestReview(in: scene)
+    /// Adds feedback to the unsent queue
+    /// - Parameter feedback: The feedback to queue
+    private func queueFeedback(_ feedback: QueuedFeedback) {
+        var currentData = data
+        currentData.unsentFeedback.append(feedback)
+        data = currentData
+        
+        print("[Appero] Queued feedback for retry. Total queued: \(currentData.unsentFeedback.count)")
+    }
+    
+    /// Processes all queued feedback, attempting to send them to the backend
+    private func processUnsentFeedback() async {
+        guard isConnected && !forceOfflineMode else {
+            print("[Appero] No connectivity - skipping unsent feedback processing")
+            return
         }
-        #endif
+        
+        var currentData = data
+        
+        guard currentData.unsentFeedback.isEmpty == false else {
+            return // No feedback to process
+        }
+        
+        print("[Appero] Processing \(currentData.unsentFeedback.count) unsent feedback items")
+        
+        var successfullyProcessed: [QueuedFeedback] = []
+        
+        for (index, feedback) in currentData.unsentFeedback.enumerated() {
+            guard let apiKey = apiKey else {
+                print("[Appero] Cannot process feedback - API key not set")
+                continue
+            }
+            
+            do {
+                try await ApperoAPIClient.sendRequest(
+                    endPoint: "feedback",
+                    fields: [
+                        "sent_at": feedback.date.ISO8601Format(),
+                        "feedback": feedback.feedback ?? "",
+                        "source" : UIDevice.current.systemName,
+                        "build_version" : Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "n/a",
+                        "rating": String(feedback.rating)
+                    ],
+                    method: .post,
+                    authorization: apiKey
+                )
+                
+                successfullyProcessed.append(feedback)
+                print("[Appero] Successfully sent queued feedback \(index + 1)/\(currentData.unsentFeedback.count)")
+                
+            } catch {
+                print("[Appero] Failed to send queued feedback \(index + 1)/\(currentData.unsentFeedback.count): \(error)")
+            }
+        }
+        
+        // Remove successfully processed feedback from the queue
+        currentData.unsentFeedback.removeAll { feedback in
+            successfullyProcessed.contains(feedback)
+        }
+        
+        data = currentData
     }
 
+    /// Sends an experience to the backend, queuing it if the request fails
+    /// - Parameter experience: The experience to send
+    private func postExperience(_ experience: Experience) async {
+        guard let apiKey = apiKey, let clientId = clientId else {
+            print("[Appero] Cannot send experience - API key or client ID not set")
+            queueExperience(experience)
+            return
+        }
+        
+        // Check basic connectivity before attempting to send
+        guard isConnected && !forceOfflineMode else {
+            print("[Appero] No network connectivity - queuing experience")
+            queueExperience(experience)
+            return
+        }
+        
+        do {
+            let experienceData: [String: Any] = [
+                "client_id": clientId,
+                "date": experience.date.ISO8601Format(),
+                "value": experience.value.rawValue,
+                "context": experience.context ?? "",
+                "source": await UIDevice.current.systemName,
+                "build_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+            ]
+            
+            let data = try await ApperoAPIClient.sendRequest(
+                endPoint: "experience",
+                fields: experienceData,
+                method: .post,
+                authorization: apiKey
+            )
+            
+            handleExperienceResponse(response: try JSONDecoder().decode(ExperienceResponse.self, from: data))
+            
+        } catch let error as ApperoAPIError {
+            print("[Appero] Failed to send experience - queuing for retry")
+            
+            switch error {
+            case .networkError(statusCode: let code):
+                print("[Appero] Network error \(code)")
+            case .noData:
+                print("[Appero] No data received")
+            case .noResponse:
+                print("[Appero] No response received")
+            }
+            
+            queueExperience(experience)
+            
+        } catch {
+            print("[Appero] Unknown error sending experience - queuing for retry: \(error)")
+            queueExperience(experience)
+        }
+    }
+    
+    /// Sends feedback to the backend, queuing it if the request fails
+    /// - Parameter feedback: The feedback to send
+    private func postFeedback(_ feedback: QueuedFeedback) async {
+        guard let apiKey = apiKey, let clientId = clientId else {
+            print("[Appero] Cannot send feedback - API key or client ID not set")
+            queueFeedback(feedback)
+            return
+        }
+        
+        // Check basic connectivity before attempting to send
+        guard isConnected && !forceOfflineMode else {
+            print("[Appero] No network connectivity - queuing feedback")
+            queueFeedback(feedback)
+            return
+        }
+        
+        do {
+            let feedbackData: [String: Any] = [
+                "client_id": clientId,
+                "date": feedback.date.ISO8601Format(),
+                "rating": String(feedback.rating),
+                "feedback": feedback.feedback ?? "",
+                "source": await UIDevice.current.systemName,
+                "build_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+            ]
+            
+            let data = try await ApperoAPIClient.sendRequest(
+                endPoint: "feedback",
+                fields: feedbackData,
+                method: .post,
+                authorization: apiKey
+            )
+            
+        } catch let error as ApperoAPIError {
+            print("[Appero] Failed to send feedback - queuing for retry")
+            
+            switch error {
+                case .networkError(statusCode: let code):
+                    print("[Appero] Network error \(code)")
+                case .noData:
+                    print("[Appero] No data received")
+                case .noResponse:
+                    print("[Appero] No response received")
+            }
+            
+            queueFeedback(feedback)
+            
+        } catch {
+            print("[Appero] Unknown error sending feedback - queuing for retry: \(error)")
+            queueFeedback(feedback)
+        }
+    }
+    
+    private func handleExperienceResponse(response: ExperienceResponse) {
+        
+        var currentData = data
+        
+        // We won't let subsequent responses flip the value here if we're currently due to show the UI
+        if currentData.feedbackPromptShouldDisplay == false {
+            currentData.feedbackPromptShouldDisplay = response.shouldShowFeedbackUI
+        }
+        currentData.feedbackUIStrings = response.feedbackUI ?? FeedbackUIStrings(
+            title: Constants.defaultTitle,
+            subtitle: Constants.defaultSubtitle,
+            prompt: Constants.defaultPrompt
+        )
+        currentData.flowType = response.flowType
+        
+        data = currentData
+    }
+    
     // MARK: - API Calls
     
     /// Post user feedback to Appero.
@@ -420,23 +535,38 @@ public class Appero {
             return false
         }
         
+        let queuedFeedback = QueuedFeedback(date: Date(), rating: rating, feedback: feedback)
+        
+        // Check basic connectivity before attempting to send
+        guard isConnected && !forceOfflineMode else {
+            print("[Appero] No network connectivity - queuing feedback")
+            queueFeedback(queuedFeedback)
+            return true // Return true since we've queued it successfully
+        }
+        
+        guard let apiKey = apiKey else {
+            print("[Appero] Cannot send feedback - API key not set")
+            queueFeedback(queuedFeedback)
+            return true // Return true since we've queued it successfully
+        }
+        
         do {
             try await ApperoAPIClient.sendRequest(
                 endPoint: "feedback",
                 fields: [
-                    "sent_at": Date().ISO8601Format(),
-                    "feedback": feedback ?? "",
+                    "sent_at": queuedFeedback.date.ISO8601Format(),
+                    "feedback": queuedFeedback.feedback ?? "",
                     "source" : UIDevice.current.systemName,
                     "build_version" : Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "n/a",
-                    "rating": String(rating)
+                    "rating": String(queuedFeedback.rating)
                 ],
                 method: .post,
-                authorization: apiKey!
+                authorization: apiKey
             )
             return true
         }
         catch let error as ApperoAPIError {
-            print("[Appero] Error submitting feedback")
+            print("[Appero] Error submitting feedback - queuing for retry")
             
             switch error {
                 case .networkError(statusCode: let code):
@@ -446,12 +576,39 @@ public class Appero {
                 case .noResponse:
                     print("[Appero] No response")
             }
-            return false
+            
+            queueFeedback(queuedFeedback)
+            return true // Return true since we've queued it successfully
         }
         catch _ {
-            print("[Appero] Unknown error submitting feedback")
-            return false
+            print("[Appero] Unknown error submitting feedback - queuing for retry")
+            queueFeedback(queuedFeedback)
+            return true // Return true since we've queued it successfully
         }
+    }
+    
+    // MARK: - Miscellaneous Functions
+    
+    /// Resets all local data (queued experiences, user ID etc). You might use this when the user logs out or when testing your integration, however in typical use it's not required.
+    public func reset() {
+        // Clear all UserDefaults keys
+        UserDefaults.standard.removeObject(forKey: Constants.kUserIdKey)
+        UserDefaults.standard.removeObject(forKey: Constants.kApperoData)
+        UserDefaults.standard.removeObject(forKey: Constants.kUserApperoDictionary)
+        
+        // Clear instance variables
+        self.clientId = nil
+    }
+    
+    /// Convenience function for requesting an app store rating. We recommend letting Appero handle when this is called to maximise your chances of a positive rating.
+    public func requestAppStoreRating() {
+        #if os(macOS)
+        SKStoreReviewController.requestReview()
+        #else
+        if let scene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
+            SKStoreReviewController.requestReview(in: scene)
+        }
+        #endif
     }
     
     deinit {
