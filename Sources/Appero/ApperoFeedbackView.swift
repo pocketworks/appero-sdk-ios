@@ -22,8 +22,9 @@ public struct ApperoFeedbackView: View {
     let strings: Appero.FeedbackUIStrings
     
     @State private var selectedPanelHeight = PresentationDetent.fraction(0.33)
-    @State private var panelMode: ApperoPanel
+    @State private var flowType: Appero.FlowType
     @State private var rating: Int = 0
+    @State private var showThanks: Bool = false
     
     private let ratingDetent = PresentationDetent.fraction(0.33)
     private let feedbackDetent = PresentationDetent.fraction(0.7)
@@ -32,7 +33,7 @@ public struct ApperoFeedbackView: View {
     
     public init(productName: String) {
         self.productName = productName
-        self.panelMode = .rating
+        self.flowType = Appero.instance.flowType
         self.strings = Appero.instance.feedbackUIStrings
     }
     
@@ -51,42 +52,43 @@ public struct ApperoFeedbackView: View {
                     .padding(.trailing)
                 })
                 
-                switch panelMode {
-                    case .rating:
-                        FeedbackView(productName: productName, strings: Appero.instance.feedbackUIStrings, onRatingChosen: { rating in
-                            selectedPanelHeight = feedbackDetent
-                        }, onSubmit: { rating, feedback in
-                            Task {
-                                await Appero.instance.postFeedback(
-                                    rating: rating,
-                                    feedback: feedback
-                                )
+                if showThanks {
+                    ThanksView(productName: productName, rating: rating) {
+                        presentationMode.wrappedValue.dismiss()
+                    }
+                    .padding(.horizontal)
+                } else {
+                    
+                    switch flowType {
+                        case .positive, .neutral:
+                            FeedbackView(productName: productName, strings: Appero.instance.feedbackUIStrings, onRatingChosen: { rating in
+                                selectedPanelHeight = feedbackDetent
+                            }, onSubmit: { rating, feedback in
+                                Task {
+                                    await Appero.instance.postFeedback(
+                                        rating: rating,
+                                        feedback: feedback
+                                    )
+                                }
+                                Appero.instance.analyticsDelegate?.logApperoFeedback(rating: rating, feedback: feedback)
+                                self.rating = rating
+                                self.showThanks = true
+                                selectedPanelHeight = rating > 3 ? ratingDetent : thanksDetent
+                                Appero.instance.shouldShowFeedbackPrompt = false
+                            })
+                            .padding(.horizontal)
+                            
+                        case .negative:
+                            
+                            NegativeFlowView(strings: Appero.instance.feedbackUIStrings) {
+                                //
+                            } onSubmit: { feedback in
+                                Appero.instance.analyticsDelegate?.logApperoFeedback(rating: 1, feedback: feedback)
+                                self.rating = 1
+                                self.showThanks = true
                             }
-                            Appero.instance.analyticsDelegate?.logApperoFeedback(rating: rating, feedback: feedback)
-                            self.rating = rating
-                            panelMode = .thanks
-                            selectedPanelHeight = rating > 3 ? ratingDetent : thanksDetent
-                            Appero.instance.shouldShowFeedbackPrompt = false
-                        })
-                        .padding(.horizontal)
-                        
-                    case .frustration:
-                        
-                        FrustrationView(strings: Appero.instance.feedbackUIStrings) {
-                            //
-                        } onSubmit: { feedback in
-                            Appero.instance.analyticsDelegate?.logApperoFeedback(rating: 1, feedback: feedback)
-                            self.rating = 1
-                            panelMode = .thanks
-                        }
-                        
-                    case .thanks:
-                        ThanksView(productName: productName, rating: rating) {
-                            presentationMode.wrappedValue.dismiss()
-                        }
-                        .padding(.horizontal)
+                    }
                 }
-                
             }
         }
         .background(Appero.instance.theme.backgroundColor)
@@ -197,7 +199,7 @@ private struct FeedbackView: View {
 }
 
 @available(iOS 16, *)
-private struct FrustrationView: View {
+private struct NegativeFlowView: View {
     
     let kFeedbackLimit = 120
     
@@ -452,5 +454,5 @@ private struct ThanksView: View {
 
 @available(iOS 16, *)
 #Preview {
-    
+    ApperoFeedbackView(productName: "SwiftUITest")
 }

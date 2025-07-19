@@ -79,7 +79,7 @@ public class Appero {
         let prompt: String
     }
     
-    private enum FlowType: String, Codable {
+    public enum FlowType: String, Codable {
         case positive = "normal"
         case neutral = "neutral"
         case negative = "frustration"
@@ -159,6 +159,12 @@ public class Appero {
     public var feedbackUIStrings: Appero.FeedbackUIStrings {
         get {
             return data.feedbackUIStrings
+        }
+    }
+    
+    public var flowType: Appero.FlowType {
+        get {
+            return data.flowType
         }
     }
     
