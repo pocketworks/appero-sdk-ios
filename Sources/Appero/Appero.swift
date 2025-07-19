@@ -12,6 +12,7 @@
 //
 import Foundation
 import StoreKit
+import Network
 
 public class Appero {
     
@@ -23,6 +24,9 @@ public class Appero {
         static let defaultTitle = "Thanks for using our app!"
         static let defaultSubtitle = "Please let us know how we're doing"
         static let defaultPrompt = "Share your thoughts here"
+        
+        // Retry timer configuration
+        static let retryTimerInterval: TimeInterval = 180.0 // 3 minutes
     }
     
     public enum ExperienceRating: Int, Codable {
@@ -33,10 +37,14 @@ public class Appero {
         case strongNegative = 1
     }
     
-    public struct Experience: Codable {
+    public struct Experience: Codable, Equatable {
         let date: Date
         let value: ExperienceRating
         let context: String?
+        
+        static public func == (lhs: Experience, rhs: Experience) -> Bool {
+            lhs.date == rhs.date && lhs.value == rhs.value && lhs.context == rhs.context
+        }
     }
     
     private struct ApperoData: Codable {
@@ -48,6 +56,8 @@ public class Appero {
         var feedbackUIStrings: FeedbackUIStrings
         /// the last date that the rating prompt was shown to the user, can be used to reprompt at a later date if the user declines initially
         var lastPromptDate: Date?
+        /// flow type to show
+        var flowType: Appero.FlowType
     }
     
     /// contains the text to display in the feedback UI, can be customised to align with your app's branding and tone via the backend
@@ -90,6 +100,17 @@ public class Appero {
     
     /// Specifies a theme to use for the Appero UI
     public var theme: ApperoTheme = DefaultTheme()
+    
+    // Network monitoring and retry timer
+    private let networkMonitor = NWPathMonitor()
+    private let networkQueue = DispatchQueue(label: "appero.network.monitor")
+    private var retryTimer: Timer?
+    private var isConnected = true
+    
+    private init() {
+        setupNetworkMonitoring()
+        startRetryTimer()
+    }
     
     /// Initialise the Appero SDK. This should be called early on in your app's lifecycle.
     /// - Parameters:
@@ -137,9 +158,10 @@ public class Appero {
                     feedbackUIStrings: FeedbackUIStrings(
                         title: Constants.defaultTitle,
                         subtitle: Constants.defaultSubtitle,
-                        prompt: Constants.defaultSubtitle
+                        prompt: Constants.defaultPrompt
                     ),
-                    lastPromptDate: nil
+                    lastPromptDate: nil,
+                    flowType: .neutral
                 )
             }
             
@@ -147,7 +169,7 @@ public class Appero {
                 let decoder = JSONDecoder()
                 return try decoder.decode(ApperoData.self, from: data)
             } catch {
-                print("[Appero] Error decoding ApperoData: \(error)")
+                print("[Appero] Error decoding local Appero data: \(error)")
                 // Return default ApperoData if decoding fails
                 return ApperoData(
                     unsentExperiences: [],
@@ -155,9 +177,10 @@ public class Appero {
                     feedbackUIStrings: FeedbackUIStrings(
                         title: Constants.defaultTitle,
                         subtitle: Constants.defaultSubtitle,
-                        prompt: Constants.defaultSubtitle
+                        prompt: Constants.defaultPrompt
                     ),
-                    lastPromptDate: nil
+                    lastPromptDate: nil,
+                    flowType: .neutral
                 )
             }
         }
@@ -167,12 +190,12 @@ public class Appero {
                 let data = try encoder.encode(newValue)
                 UserDefaults.standard.set(data, forKey: Constants.kApperoData)
             } catch {
-                print("[Appero] Error encoding ApperoData: \(error)")
+                print("[Appero] Error encoding local Appero data: \(error)")
             }
         }
     }
  
-    /// Resets all local data (queued experiences, user ID etc).
+    /// Resets all local data (queued experiences, user ID etc). You might use this when the user logs out or when testing your integration, however in typical use it's not required.
     public func reset() {
         // Clear all UserDefaults keys
         UserDefaults.standard.removeObject(forKey: Constants.kUserIdKey)
@@ -182,7 +205,196 @@ public class Appero {
         // Clear instance variables
         self.clientId = nil
     }
- 
+    
+    // MARK: - Network Monitoring
+    
+    /// Sets up network path monitoring to track connectivity status
+    private func setupNetworkMonitoring() {
+        networkMonitor.pathUpdateHandler = { [weak self] path in
+            DispatchQueue.main.async {
+                self?.isConnected = path.status == .satisfied
+                
+                // If we regain connectivity and have unsent experiences, try to send them immediately
+                if self?.isConnected == true {
+                    Task {
+                        await self?.processUnsentExperiences()
+                    }
+                }
+            }
+        }
+        networkMonitor.start(queue: networkQueue)
+    }
+    
+    /// Starts the retry timer that periodically attempts to send queued experiences
+    private func startRetryTimer() {
+        retryTimer = Timer.scheduledTimer(withTimeInterval: Constants.retryTimerInterval, repeats: true) { [weak self] _ in
+            Task {
+                await self?.processUnsentExperiences()
+            }
+        }
+    }
+    
+    /// Stops the retry timer (useful for cleanup)
+    private func stopRetryTimer() {
+        retryTimer?.invalidate()
+        retryTimer = nil
+    }
+    
+    // MARK: - Experience Logging
+    
+    /// Logs a user experience using the ExperienceRating enum
+    /// - Parameters:
+    ///   - experience: The experience rating
+    ///   - context: Optional context string to provide additional information
+    public func log(experience: ExperienceRating, context: String? = nil) {
+        let experienceRecord = Experience(date: Date(), value: experience, context: context)
+        
+        Task {
+            await postExperience(experienceRecord)
+        }
+    }
+    
+    // MARK: - Experience API Communication
+    
+    /// Sends an experience to the backend, queuing it if the request fails
+    /// - Parameter experience: The experience to send
+    private func postExperience(_ experience: Experience) async {
+        guard let apiKey = apiKey, let clientId = clientId else {
+            print("[Appero] Cannot send experience - API key or client ID not set")
+            queueExperience(experience)
+            return
+        }
+        
+        // Check basic connectivity before attempting to send
+        guard isConnected else {
+            print("[Appero] No network connectivity - queuing experience")
+            queueExperience(experience)
+            return
+        }
+        
+        do {
+            let experienceData: [String: Any] = [
+                "client_id": clientId,
+                "date": experience.date.ISO8601Format(),
+                "value": experience.value.rawValue,
+                "context": experience.context ?? "",
+                "source": UIDevice.current.systemName,
+                "build_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+            ]
+            
+            let data = try await ApperoAPIClient.sendRequest(
+                endPoint: "experience",
+                fields: experienceData,
+                method: .post,
+                authorization: apiKey
+            )
+            
+            handleExperienceResponse(response: try JSONDecoder().decode(ExperienceResponse.self, from: data))
+            
+        } catch let error as ApperoAPIError {
+            print("[Appero] Failed to send experience - queuing for retry")
+            
+            switch error {
+            case .networkError(statusCode: let code):
+                print("[Appero] Network error \(code)")
+            case .noData:
+                print("[Appero] No data received")
+            case .noResponse:
+                print("[Appero] No response received")
+            }
+            
+            queueExperience(experience)
+            
+        } catch {
+            print("[Appero] Unknown error sending experience - queuing for retry: \(error)")
+            queueExperience(experience)
+        }
+    }
+    
+    private func handleExperienceResponse(response: ExperienceResponse) {
+        
+        var currentData = data
+        
+        // We won't let subsequent responses flip the value here if we're currently due to show the UI
+        if currentData.feedbackPromptShouldDisplay == false {
+            currentData.feedbackPromptShouldDisplay = response.shouldShowFeedbackUI
+        }
+        currentData.feedbackUIStrings = response.feedbackUI ?? FeedbackUIStrings(
+            title: Constants.defaultTitle,
+            subtitle: Constants.defaultSubtitle,
+            prompt: Constants.defaultPrompt
+        )
+        currentData.flowType = response.flowType
+        
+        data = currentData
+    }
+    
+    /// Adds an experience to the unsent queue
+    /// - Parameter experience: The experience to queue
+    private func queueExperience(_ experience: Experience) {
+        var currentData = data
+        currentData.unsentExperiences.append(experience)
+        data = currentData
+        
+        print("[Appero] Queued experience for retry. Total queued: \(currentData.unsentExperiences.count)")
+    }
+    
+    /// Processes all queued experiences, attempting to send them to the backend
+    private func processUnsentExperiences() async {
+        guard isConnected else {
+            print("[Appero] No connectivity - skipping unsent experience processing")
+            return
+        }
+        
+        var currentData = data
+        
+        guard currentData.unsentExperiences.isEmpty == false else {
+            return // No experiences to process
+        }
+        
+        print("[Appero] Processing \(currentData.unsentExperiences.count) unsent experiences")
+        
+        var successfullyProcessed: [Appero.Experience] = []
+        
+        for (index, experience) in currentData.unsentExperiences.enumerated() {
+            guard let apiKey = apiKey, let clientId = clientId else {
+                print("[Appero] Cannot process experience - API key or client ID not set")
+                continue
+            }
+            
+            do {
+                let experienceData: [String: Any] = await [
+                    "client_id": clientId,
+                    "date": experience.date.ISO8601Format(),
+                    "value": experience.value.rawValue,
+                    "context": experience.context ?? "",
+                    "source": UIDevice.current.systemName,
+                    "build_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+                ]
+                
+                let data = try await ApperoAPIClient.sendRequest(
+                    endPoint: "experiences",
+                    fields: experienceData,
+                    method: .post,
+                    authorization: apiKey
+                )
+                
+                successfullyProcessed.append(experience)
+                handleExperienceResponse(response: try JSONDecoder().decode(ExperienceResponse.self, from: data))
+                
+            } catch {
+                print("[Appero] Failed to send queued experience \(index + 1)/\(currentData.unsentExperiences.count): \(error)")
+            }
+            
+        }
+        
+        currentData.unsentExperiences.removeAll { experience in
+            successfullyProcessed.contains(experience)
+        }
+        
+        data = currentData
+    }
+
     // MARK: - Miscellaneous Functions
     
     /// Convenience function for requesting an app store rating. We recommend letting Appero handle when this is called to maximise your chances of a positive rating.
@@ -215,7 +427,7 @@ public class Appero {
                     "sent_at": Date().ISO8601Format(),
                     "feedback": feedback ?? "",
                     "source" : UIDevice.current.systemName,
-                    "build_version" : Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+                    "build_version" : Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "n/a",
                     "rating": String(rating)
                 ],
                 method: .post,
@@ -240,6 +452,11 @@ public class Appero {
             print("[Appero] Unknown error submitting feedback")
             return false
         }
+    }
+    
+    deinit {
+        stopRetryTimer()
+        networkMonitor.cancel()
     }
 }
 
