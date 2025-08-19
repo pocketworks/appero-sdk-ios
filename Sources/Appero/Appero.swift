@@ -107,6 +107,9 @@ public class Appero {
     /// an optional string to identify your user (uuid from your backend, account number, email address etc.)
     var clientId: String?
     
+    /// set to true to enable debug logging to the console
+    var isDebug = false
+    
     /// Specifies a delegate to handle analytics
     public var analyticsDelegate: ApperoAnalyticsDelegate?
     
@@ -191,7 +194,7 @@ public class Appero {
                 let decoder = JSONDecoder()
                 return try decoder.decode(ApperoData.self, from: data)
             } catch {
-                print("[Appero] Error decoding local Appero data: \(error)")
+                ApperoDebug.log("Error decoding local Appero data: \(error)")
                 // Return default ApperoData if decoding fails
                 return ApperoData(
                     unsentExperiences: [],
@@ -213,7 +216,7 @@ public class Appero {
                 let data = try encoder.encode(newValue)
                 UserDefaults.standard.set(data, forKey: Constants.kApperoData)
             } catch {
-                print("[Appero] Error encoding local Appero data: \(error)")
+                ApperoDebug.log("Error encoding local Appero data: \(error)")
             }
         }
     }
@@ -230,7 +233,7 @@ public class Appero {
                     return
                 }
                 
-                self.isConnected = path.status == .satisfied && !self.forceOfflineMode ?? false
+                self.isConnected = path.status == .satisfied && !self.forceOfflineMode
                 
                 // If we regain connectivity and have unsent experiences, try to send them immediately
                 if self.isConnected == true {
@@ -281,13 +284,13 @@ public class Appero {
         currentData.unsentExperiences.append(experience)
         data = currentData
         
-        print("[Appero] Queued experience for retry. Total queued: \(currentData.unsentExperiences.count)")
+        ApperoDebug.log("Queued experience for retry. Total queued: \(currentData.unsentExperiences.count)")
     }
     
     /// Processes all queued experiences, attempting to send them to the backend
     private func processUnsentExperiences() async {
         guard isConnected && !forceOfflineMode else {
-            print("[Appero] No connectivity - skipping unsent experience processing")
+            ApperoDebug.log("No connectivity - skipping unsent experience processing")
             return
         }
         
@@ -297,13 +300,13 @@ public class Appero {
             return // No experiences to process
         }
         
-        print("[Appero] Processing \(currentData.unsentExperiences.count) unsent experiences")
+        ApperoDebug.log("Processing \(currentData.unsentExperiences.count) unsent experiences")
         
         var successfullyProcessed: [Appero.Experience] = []
         
         for (index, experience) in currentData.unsentExperiences.enumerated() {
             guard let apiKey = apiKey, let clientId = clientId else {
-                print("[Appero] Cannot process experience - API key or client ID not set")
+                ApperoDebug.log("Cannot process experience - API key or client ID not set")
                 continue
             }
             
@@ -328,7 +331,7 @@ public class Appero {
                 handleExperienceResponse(response: try JSONDecoder().decode(ExperienceResponse.self, from: data))
                 
             } catch {
-                print("[Appero] Failed to send queued experience \(index + 1)/\(currentData.unsentExperiences.count): \(error)")
+                ApperoDebug.log("Failed to send queued experience \(index + 1)/\(currentData.unsentExperiences.count): \(error)")
             }
             
         }
@@ -347,13 +350,13 @@ public class Appero {
         currentData.unsentFeedback.append(feedback)
         data = currentData
         
-        print("[Appero] Queued feedback for retry. Total queued: \(currentData.unsentFeedback.count)")
+        ApperoDebug.log("Queued feedback for retry. Total queued: \(currentData.unsentFeedback.count)")
     }
     
     /// Processes all queued feedback, attempting to send them to the backend
     private func processUnsentFeedback() async {
         guard isConnected && !forceOfflineMode else {
-            print("[Appero] No connectivity - skipping unsent feedback processing")
+            ApperoDebug.log("No connectivity - skipping unsent feedback processing")
             return
         }
         
@@ -363,13 +366,13 @@ public class Appero {
             return // No feedback to process
         }
         
-        print("[Appero] Processing \(currentData.unsentFeedback.count) unsent feedback items")
+        ApperoDebug.log("Processing \(currentData.unsentFeedback.count) unsent feedback items")
         
         var successfullyProcessed: [QueuedFeedback] = []
         
         for (index, feedback) in currentData.unsentFeedback.enumerated() {
             guard let apiKey = apiKey else {
-                print("[Appero] Cannot process feedback - API key not set")
+                ApperoDebug.log("Cannot process feedback - API key not set")
                 continue
             }
             
@@ -388,10 +391,10 @@ public class Appero {
                 )
                 
                 successfullyProcessed.append(feedback)
-                print("[Appero] Successfully sent queued feedback \(index + 1)/\(currentData.unsentFeedback.count)")
+                ApperoDebug.log("Successfully sent queued feedback \(index + 1)/\(currentData.unsentFeedback.count)")
                 
             } catch {
-                print("[Appero] Failed to send queued feedback \(index + 1)/\(currentData.unsentFeedback.count): \(error)")
+                ApperoDebug.log("Failed to send queued feedback \(index + 1)/\(currentData.unsentFeedback.count): \(error)")
             }
         }
         
@@ -407,14 +410,14 @@ public class Appero {
     /// - Parameter experience: The experience to send
     private func postExperience(_ experience: Experience) async {
         guard let apiKey = apiKey, let clientId = clientId else {
-            print("[Appero] Cannot send experience - API key or client ID not set")
+            ApperoDebug.log("Cannot send experience - API key or client ID not set")
             queueExperience(experience)
             return
         }
         
         // Check basic connectivity before attempting to send
         guard isConnected && !forceOfflineMode else {
-            print("[Appero] No network connectivity - queuing experience")
+            ApperoDebug.log("No network connectivity - queuing experience")
             queueExperience(experience)
             return
         }
@@ -439,21 +442,21 @@ public class Appero {
             handleExperienceResponse(response: try JSONDecoder().decode(ExperienceResponse.self, from: data))
             
         } catch let error as ApperoAPIError {
-            print("[Appero] Failed to send experience - queuing for retry")
+            ApperoDebug.log(" Failed to send experience - queuing for retry")
             
             switch error {
             case .networkError(statusCode: let code):
-                print("[Appero] Network error \(code)")
+                    ApperoDebug.log("Network error \(code)")
             case .noData:
-                print("[Appero] No data received")
+                    ApperoDebug.log("No data received")
             case .noResponse:
-                print("[Appero] No response received")
+                    ApperoDebug.log(" No response received")
             }
             
             queueExperience(experience)
             
         } catch {
-            print("[Appero] Unknown error sending experience - queuing for retry: \(error)")
+            ApperoDebug.log(" Unknown error sending experience - queuing for retry: \(error)")
             queueExperience(experience)
         }
     }
@@ -462,14 +465,14 @@ public class Appero {
     /// - Parameter feedback: The feedback to send
     private func postFeedback(_ feedback: QueuedFeedback) async {
         guard let apiKey = apiKey, let clientId = clientId else {
-            print("[Appero] Cannot send feedback - API key or client ID not set")
+            ApperoDebug.log("Cannot send feedback - API key or client ID not set")
             queueFeedback(feedback)
             return
         }
         
         // Check basic connectivity before attempting to send
         guard isConnected && !forceOfflineMode else {
-            print("[Appero] No network connectivity - queuing feedback")
+            ApperoDebug.log("No network connectivity - queuing feedback")
             queueFeedback(feedback)
             return
         }
@@ -484,7 +487,7 @@ public class Appero {
                 "build_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
             ]
             
-            let data = try await ApperoAPIClient.sendRequest(
+            _ = try await ApperoAPIClient.sendRequest(
                 endPoint: "feedback",
                 fields: feedbackData,
                 method: .post,
@@ -492,21 +495,21 @@ public class Appero {
             )
             
         } catch let error as ApperoAPIError {
-            print("[Appero] Failed to send feedback - queuing for retry")
+            ApperoDebug.log("Failed to send feedback - queuing for retry")
             
             switch error {
                 case .networkError(statusCode: let code):
-                    print("[Appero] Network error \(code)")
+                    ApperoDebug.log("Network error \(code)")
                 case .noData:
-                    print("[Appero] No data received")
+                    ApperoDebug.log("No data received")
                 case .noResponse:
-                    print("[Appero] No response received")
+                    ApperoDebug.log("No response received")
             }
             
             queueFeedback(feedback)
             
         } catch {
-            print("[Appero] Unknown error sending feedback - queuing for retry: \(error)")
+            ApperoDebug.log("Unknown error sending feedback - queuing for retry: \(error)")
             queueFeedback(feedback)
         }
     }
@@ -545,13 +548,13 @@ public class Appero {
         
         // Check basic connectivity before attempting to send
         guard isConnected && !forceOfflineMode else {
-            print("[Appero] No network connectivity - queuing feedback")
+            ApperoDebug.log("No network connectivity - queuing feedback")
             queueFeedback(queuedFeedback)
             return true // Return true since we've queued it successfully
         }
         
         guard let apiKey = apiKey else {
-            print("[Appero] Cannot send feedback - API key not set")
+            ApperoDebug.log("Cannot send feedback - API key not set")
             queueFeedback(queuedFeedback)
             return true // Return true since we've queued it successfully
         }
@@ -572,22 +575,22 @@ public class Appero {
             return true
         }
         catch let error as ApperoAPIError {
-            print("[Appero] Error submitting feedback - queuing for retry")
+            ApperoDebug.log("Error submitting feedback - queuing for retry")
             
             switch error {
                 case .networkError(statusCode: let code):
-                    print("[Appero] Network error \(code)")
+                    ApperoDebug.log("Network error \(code)")
                 case .noData:
-                    print("[Appero] No data")
+                    ApperoDebug.log("No data")
                 case .noResponse:
-                    print("[Appero] No response")
+                    ApperoDebug.log("No response")
             }
             
             queueFeedback(queuedFeedback)
             return true // Return true since we've queued it successfully
         }
         catch _ {
-            print("[Appero] Unknown error submitting feedback - queuing for retry")
+            ApperoDebug.log("Unknown error submitting feedback - queuing for retry")
             queueFeedback(queuedFeedback)
             return true // Return true since we've queued it successfully
         }
