@@ -26,6 +26,8 @@ struct ApperoExampleSwiftUIApp: App {
             clientId: "test_user_1"
         )
         
+        Appero.instance.isDebug = true
+        
         // Set the theme to use for the Appero UI
         Appero.instance.theme = DefaultTheme()
         

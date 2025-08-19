@@ -35,17 +35,6 @@ struct ContentView: View {
                 }
             }
             
-            VStack {
-                Text("Network Mode:")
-                Toggle("Force Offline Mode (for testing queuing)", isOn: $forceOfflineMode)
-                    .onChange(of: forceOfflineMode) { oldValue, newValue in
-                        Appero.instance.forceOfflineMode = newValue
-                    }
-            }
-            .padding()
-            .background(Color.gray.opacity(0.1))
-            .cornerRadius(10)
-            
             VStack(spacing: 15) {
                 Button(action: {
                     logPositiveExperience()
@@ -108,7 +97,6 @@ struct ContentView: View {
                 Text("Status:")
                     .font(.headline)
                 Text("Should show feedback: \(Appero.instance.shouldShowFeedbackPrompt ? "Yes" : "No")")
-                Text("Offline mode: \(Appero.instance.forceOfflineMode ? "On" : "Off")")
             }
             .padding()
             .background(Color.gray.opacity(0.1))
@@ -118,17 +106,9 @@ struct ContentView: View {
         }
         .padding()
         .sheet(isPresented: $showingAppero) {
-            ApperoRatingView(
-                productName: "ApperoExampleSwiftUI",
-                strings: Appero.instance.feedbackUIStrings
-            ) { rating, feedback in
-                // Handle the feedback submission
-                Task {
-                    let success = await Appero.instance.postFeedback(rating: rating, feedback: feedback)
-                    print("Feedback submitted successfully: \(success)")
-                }
-                showingAppero = false
-            }
+            ApperoFeedbackView(
+                productName: Bundle.main.bundleIdentifier ?? "My app"
+            )
         }
     }
     

@@ -108,7 +108,7 @@ public class Appero {
     var clientId: String?
     
     /// set to true to enable debug logging to the console
-    var isDebug = false
+    public var isDebug = false
     
     /// Specifies a delegate to handle analytics
     public var analyticsDelegate: ApperoAnalyticsDelegate?
