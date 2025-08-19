@@ -1,0 +1,42 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "DefaultPrompt" : {
+      "comment" : "Overrideable text field prompt for the feedback UI",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Share your thoughts here"
+          }
+        }
+      }
+    },
+    "DefaultSubtitle" : {
+      "comment" : "Overrideable subtitle text for the feedback UI",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please let us know how we're doing"
+          }
+        }
+      }
+    },
+    "DefaultTitle" : {
+      "comment" : "Overrideable title text for the feedback UI",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thanks for using our app!"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
