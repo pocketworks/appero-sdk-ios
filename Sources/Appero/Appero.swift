@@ -433,7 +433,7 @@ public class Appero {
             ]
             
             let data = try await ApperoAPIClient.sendRequest(
-                endPoint: "experience",
+                endPoint: "experiences",
                 fields: experienceData,
                 method: .post,
                 authorization: apiKey

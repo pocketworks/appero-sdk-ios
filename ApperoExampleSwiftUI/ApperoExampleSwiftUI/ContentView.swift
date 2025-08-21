@@ -23,8 +23,8 @@ struct ContentView: View {
                     Text("Dark").tag(2)
                 }
                 .pickerStyle(.segmented)
-                .onChange(of: theme) { oldValue, newValue in
-                    switch newValue {
+                .onChange(of: theme) { oldTag, newTag in
+                    switch newTag {
                         case 1:
                             Appero.instance.theme = LightTheme()
                         case 2:
@@ -37,13 +37,27 @@ struct ContentView: View {
             
             VStack(spacing: 15) {
                 Button(action: {
-                    logPositiveExperience()
+                    log(experience: .strongPositive, context: "Very positive button tapped")
                 }, label: {
                     HStack {
-                        Image(systemName: "star.fill")
+                        Image(systemName: "hand.thumbsup.fill")
                             .imageScale(.large)
                             .foregroundStyle(.green)
-                        Text("Log Positive Experience")
+                        Text("Very Positive")
+                    }
+                    .padding()
+                    .background(Color.green.opacity(0.2))
+                    .cornerRadius(10)
+                })
+                
+                Button(action: {
+                    log(experience: .positive, context: "Positive button tapped")
+                }, label: {
+                    HStack {
+                        Image(systemName: "hand.thumbsup")
+                            .imageScale(.large)
+                            .foregroundStyle(.green)
+                        Text("Positive")
                     }
                     .padding()
                     .background(Color.green.opacity(0.1))
@@ -51,13 +65,13 @@ struct ContentView: View {
                 })
                 
                 Button(action: {
-                    logNeutralExperience()
+                    log(experience: .neutral, context: "Neutral button tapped")
                 }, label: {
                     HStack {
-                        Image(systemName: "star.leadinghalf.filled")
+                        Image(systemName: "circle.dotted")
                             .imageScale(.large)
                             .foregroundStyle(.orange)
-                        Text("Log Neutral Experience")
+                        Text("Neutral")
                     }
                     .padding()
                     .background(Color.orange.opacity(0.1))
@@ -65,16 +79,30 @@ struct ContentView: View {
                 })
                 
                 Button(action: {
-                    logNegativeExperience()
+                    log(experience: .negative, context: "Negative button tapped")
                 }, label: {
                     HStack {
-                        Image(systemName: "star.slash")
+                        Image(systemName: "hand.thumbsdown")
                             .imageScale(.large)
                             .foregroundStyle(.red)
-                        Text("Log Negative Experience")
+                        Text("Negative")
                     }
                     .padding()
                     .background(Color.red.opacity(0.1))
+                    .cornerRadius(10)
+                })
+                
+                Button(action: {
+                    log(experience: .strongNegative, context: "Strong negative button tapped")
+                }, label: {
+                    HStack {
+                        Image(systemName: "hand.thumbsdown.fill")
+                            .imageScale(.large)
+                            .foregroundStyle(.red)
+                        Text("Very Negative")
+                    }
+                    .padding()
+                    .background(Color.red.opacity(0.2))
                     .cornerRadius(10)
                 })
                 
@@ -112,18 +140,8 @@ struct ContentView: View {
         }
     }
     
-    func logPositiveExperience() {
-        Appero.instance.log(experience: .strongPositive, context: "User tapped positive button")
-        checkShouldShowFeedback()
-    }
-    
-    func logNeutralExperience() {
-        Appero.instance.log(experience: .neutral, context: "User tapped neutral button")
-        checkShouldShowFeedback()
-    }
-    
-    func logNegativeExperience() {
-        Appero.instance.log(experience: .strongNegative, context: "User tapped negative button")
+    func log(experience: Appero.ExperienceRating, context: String) {
+        Appero.instance.log(experience: experience, context: context)
         checkShouldShowFeedback()
     }
     
