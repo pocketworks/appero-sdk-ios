@@ -442,7 +442,7 @@ public class Appero {
             handleExperienceResponse(response: try JSONDecoder().decode(ExperienceResponse.self, from: data))
             
         } catch let error as ApperoAPIError {
-            ApperoDebug.log(" Failed to send experience - queuing for retry")
+            ApperoDebug.log("Failed to send experience - queuing for retry")
             
             switch error {
             case .networkError(statusCode: let code):
