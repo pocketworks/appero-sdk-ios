@@ -425,7 +425,7 @@ public class Appero {
         do {
             let experienceData: [String: Any] = [
                 "client_id": clientId,
-                "date": experience.date.ISO8601Format(),
+                "sent_at": experience.date.ISO8601Format(),
                 "value": experience.value.rawValue,
                 "context": experience.context ?? "",
                 "source": await UIDevice.current.systemName,
