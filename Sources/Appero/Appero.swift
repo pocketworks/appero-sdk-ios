@@ -409,7 +409,7 @@ public class Appero {
     /// Sends an experience to the backend, queuing it if the request fails
     /// - Parameter experience: The experience to send
     private func postExperience(_ experience: Experience) async {
-        guard let apiKey = apiKey, clientId != nil else {
+        guard let apiKey = apiKey, let clientId = clientId else {
             ApperoDebug.log("Cannot send experience - API key or client ID not set")
             queueExperience(experience)
             return
@@ -424,7 +424,7 @@ public class Appero {
         
         do {
             let experienceData: [String: Any] = [
-                "client_id": UUID().uuidString,
+                "client_id": clientId,
                 "sent_at": experience.date.ISO8601Format(),
                 "value": experience.value.rawValue,
                 "context": experience.context ?? "",
