@@ -45,11 +45,9 @@ struct ApperoAPIClient {
         request.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: fields, options: [])
 
-        print(request.allHTTPHeaderFields)
-        print(request.httpBody)
-        
         let (responseBody, response) = try await ApperoAPIClient.session.data(for: request)
 
+        ApperoDebug.log(String(data: responseBody ?? Data(), encoding: .utf8) ?? "No response body")
         
         guard let response = response as? HTTPURLResponse else {
             throw ApperoAPIError.noResponse
