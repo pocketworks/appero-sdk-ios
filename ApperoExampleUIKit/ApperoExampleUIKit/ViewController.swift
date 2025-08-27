@@ -32,9 +32,37 @@ class ViewController: UIViewController {
         }
     }
 
-    @IBAction func positiveVibes(sender: Any?) {
-        Appero.instance.log(experience: .strongPositive)
-        if Appero.instance.shouldShowAppero {
+    @IBAction func veryPositive(sender: Any?) {
+        Appero.instance.log(experience: .strongPositive, context: "Very positive tapped")
+        if Appero.instance.shouldShowFeedbackPrompt {
+            openAppero()
+        }
+    }
+    
+    @IBAction func positive(sender: Any?) {
+        Appero.instance.log(experience: .strongPositive, context: "Positive tapped")
+        if Appero.instance.shouldShowFeedbackPrompt {
+            openAppero()
+        }
+    }
+    
+    @IBAction func neutral(sender: Any?) {
+        Appero.instance.log(experience: .strongPositive, context: "Neutral tapped")
+        if Appero.instance.shouldShowFeedbackPrompt {
+            openAppero()
+        }
+    }
+    
+    @IBAction func negative(sender: Any?) {
+        Appero.instance.log(experience: .strongPositive, context: "Negative tapped")
+        if Appero.instance.shouldShowFeedbackPrompt {
+            openAppero()
+        }
+    }
+    
+    @IBAction func veryNegative(sender: Any?) {
+        Appero.instance.log(experience: .strongPositive, context: "Very negative tapped")
+        if Appero.instance.shouldShowFeedbackPrompt {
             openAppero()
         }
     }
