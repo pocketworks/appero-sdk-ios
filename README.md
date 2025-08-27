@@ -22,13 +22,13 @@ The Appero SDK for iOS is based around a shared instance model that can be acces
 ```
 Appero.instance.start(
     apiKey: "your_api_key",
-    userId: "your_user_id"
+    clientId: "your_user_id"
 )
 ```
 
 You can then access the instance to access the SDK's functionality from anywhere in your app it makes sense.
 
-For example triggering the send feedback API can to be called as such
+For example triggering the send feedback API can to be called as such:
 
 ```
 Task {
@@ -41,15 +41,20 @@ Task {
 
 ## Monitoring User Experience
 
-One of the core ideas in Appero is that we're tracking positive and negative user interactions to build an experience score. Once this score crosses a threshold we've defined, we want to prompt the user to give us their feedback, be it positive or constructive. We provide two mechanisms to track this experience, either using `log(experience: Experience)` or `log(points: Int)`. Logging points as an integrer allows you to define your own scale, or you can use our Experience enum that defines a Likert scale from very positive to very negative. The threshold value can set using the property `ratingThreshold`.
+One of the core ideas in Appero is that we're tracking positive and negative user experiences. Once the number of experiences logged crosses a threshold we've defined, we want to prompt the user to give us their feedback, be it positive or constructive. We call `log(experience: Experience, context: String)` to record individual experiences. The context string is used to categorise the experience and can be used to track outcomes of user flows. 
 
 ```
-Appero.instance.log(experience: .strongPositive)
+Appero.instance.log(experience: .strongPositive, context: "User started free trial")
 ```
 
-When adding Appero to a flow in your app, consider each point where the user can have a positive experience, a neutral one or a negative one and work out a threshold score that makes sense for it overall.
+Typical types of user experience you will want to add logging for are:
+* Completion of flows - positive if the user achieved what they wanted to or negative if they didn't.
+* In response to feedback requests (e.g. tapping thumbs up or down to a search result or suggestion to indicate its relevance)
+* Error states; you can determine the severity of these by considering if the error is temporary (network connection dropping) or more serious such as an error response from your server.
+* Starting or cancelling of subscriptions
 
-At some point you may wish to reset the users experience points and reprompt them for feedback. This should be done cautiously, we recommend recording and check a date value of when the user was last prompted.
+It's also possible to get creative, for example setting up a time threshold the user remains on a given screen to indicate positive behaviour if that's what we desire or negative if it indicates the inability to complete a task easily.
+
 
 ```
 Appero.instance.resetExperienceAndPrompt()
@@ -73,6 +78,8 @@ struct ContentView: View {
     }
 }
 ```
+
+The UI text is configurable through the Appero dashboard and can be configured separately for the negative and neutral/positive flow.
 
 Use the property `shouldShowAppero` to determine whether or not to prompt should be shown based on the experience score and whether feedback has already been submitted.
 
@@ -100,41 +107,6 @@ if let hostingController = hostingController {
     hostingController.didMove(toParent: self)
 }
 ```
-
-## Frustration Tracking
-
-Separate from the main experience tracking, Appero lets you track specific pain points a user might encounter in their day-to-day use of your app. For example, you might want to trigger feedback if a user consistently fails to find a result when searching or if they specifically tap some UI like a thumbs down button on a suggestion.
-
-Like user experience, frustrations are tracked per-user. There is no limit on how many frustrations that can be registered. The frustration feedback prompt is intended to be triggered only once per registered frustration and then not again, however if necessary you can reset and reregister frustrations to circumvent this restriction. _Remember if a user is having a bad time with a feature in your app, the last thing you want to do is to keep bombarding them with feedback requests about it!_
-
-First register a frustration. Each frustration must have a unique identifier. This should be human readable and descriptive. You may find it's easier to define these as static constants somewhere as you'll want to use this identifier to log events and check if the threshold has been crossed. You can optionally specify a message that will appear when the frustration feedback prompt is triggered.
-
-```        
-static let kNoResultsFrustration = "No search results found"
-
-Appero.instance.register(frustration: Appero.Frustration(
-    identifier: kNoResultsFrustration,
-    threshold: 3,
-    userPrompt: "We noticed you couldn't find what you were looking for"
-))
-```
-
-In this instance in our code when the user has performed a search and we've had no results returned we would trigger the log function on our Appero instance.
-
-```
-Appero.instance.log(frustration: kNoResultsFrustration)
-```
-
-To check whether it's time to present the frustration feedback prompt to the user, we can simply call `needsPrompt` with the identifier of the frustration:
-
-```
-if Appero.instance.needsPrompt(frustration: kNoResultsFrustration) {
-    // present the frustration feedback prompt here
-}
-```
-
-If the user dismisses the frustration feedback prompt the frustration will enter the deferred state. This is a fixed period of 30 days from the current date where the frustration can not be re-prompted.
-
 
 ## Basic Themeing of the UI
 

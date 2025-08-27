@@ -5,7 +5,6 @@ struct ContentView: View {
     
     @State private var showingAppero = false
     @State private var theme = 0
-    @State private var forceOfflineMode = false
     
     var body: some View {
         VStack(spacing: 20) {
@@ -16,7 +15,7 @@ struct ContentView: View {
                 .bold()
             
             VStack {
-                Text("Theme:")
+                Text("Appero UI theme:")
                 Picker("", selection: $theme) {
                     Text("System").tag(0)
                     Text("Light").tag(1)
@@ -37,7 +36,8 @@ struct ContentView: View {
             
             VStack(spacing: 15) {
                 Button(action: {
-                    log(experience: .strongPositive, context: "Very positive button tapped")
+                    Appero.instance.log(experience: .strongPositive, context: "Very positive button tapped")
+                    checkShouldShowFeedback()
                 }, label: {
                     HStack {
                         Image(systemName: "hand.thumbsup.fill")
@@ -51,7 +51,8 @@ struct ContentView: View {
                 })
                 
                 Button(action: {
-                    log(experience: .positive, context: "Positive button tapped")
+                    Appero.instance.log(experience: .positive, context: "Positive button tapped")
+                    checkShouldShowFeedback()
                 }, label: {
                     HStack {
                         Image(systemName: "hand.thumbsup")
@@ -65,7 +66,8 @@ struct ContentView: View {
                 })
                 
                 Button(action: {
-                    log(experience: .neutral, context: "Neutral button tapped")
+                    Appero.instance.log(experience: .neutral, context: "Neutral button tapped")
+                    checkShouldShowFeedback()
                 }, label: {
                     HStack {
                         Image(systemName: "circle.dotted")
@@ -79,7 +81,8 @@ struct ContentView: View {
                 })
                 
                 Button(action: {
-                    log(experience: .negative, context: "Negative button tapped")
+                    Appero.instance.log(experience: .negative, context: "Negative button tapped")
+                    checkShouldShowFeedback()
                 }, label: {
                     HStack {
                         Image(systemName: "hand.thumbsdown")
@@ -93,7 +96,8 @@ struct ContentView: View {
                 })
                 
                 Button(action: {
-                    log(experience: .strongNegative, context: "Strong negative button tapped")
+                    Appero.instance.log(experience: .strongNegative, context: "Strong negative button tapped")
+                    checkShouldShowFeedback()
                 }, label: {
                     HStack {
                         Image(systemName: "hand.thumbsdown.fill")
@@ -105,30 +109,7 @@ struct ContentView: View {
                     .background(Color.red.opacity(0.2))
                     .cornerRadius(10)
                 })
-                
-                Button(action: {
-                    showFeedbackPrompt()
-                }, label: {
-                    HStack {
-                        Image(systemName: "bubble.right")
-                            .imageScale(.large)
-                            .foregroundStyle(.blue)
-                        Text("Show Feedback UI")
-                    }
-                    .padding()
-                    .background(Color.blue.opacity(0.1))
-                    .cornerRadius(10)
-                })
             }
-            
-            VStack {
-                Text("Status:")
-                    .font(.headline)
-                Text("Should show feedback: \(Appero.instance.shouldShowFeedbackPrompt ? "Yes" : "No")")
-            }
-            .padding()
-            .background(Color.gray.opacity(0.1))
-            .cornerRadius(10)
             
             Spacer()
         }
@@ -138,15 +119,6 @@ struct ContentView: View {
                 productName: Bundle.main.bundleIdentifier ?? "My app"
             )
         }
-    }
-    
-    func log(experience: Appero.ExperienceRating, context: String) {
-        Appero.instance.log(experience: experience, context: context)
-        checkShouldShowFeedback()
-    }
-    
-    func showFeedbackPrompt() {
-        showingAppero = true
     }
     
     func checkShouldShowFeedback() {
