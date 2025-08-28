@@ -17,8 +17,6 @@ struct ApperoExampleSwiftUIApp: App {
         }
     }
     
-    static let kFrustrationButtonTapped = "frustration button tapped"
-    
     init() {
         // Initialize Appero with the new API
         Appero.instance.start(
