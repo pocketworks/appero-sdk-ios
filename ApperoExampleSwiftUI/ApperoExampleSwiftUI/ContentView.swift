@@ -112,6 +112,17 @@ struct ContentView: View {
             }
             
             Spacer()
+            
+            Button(action: {
+                showingAppero = true
+            }, label: {
+                HStack {
+                    Text("Manually Trigger Feedback")
+                }
+                .padding()
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(10)
+            })
         }
         .padding()
         .sheet(isPresented: $showingAppero) {

@@ -13,6 +13,7 @@
 import Foundation
 import StoreKit
 import Network
+import SwiftUI
 
 public class Appero {
     

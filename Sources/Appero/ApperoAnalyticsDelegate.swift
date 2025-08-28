@@ -10,6 +10,6 @@ import Foundation
 public protocol ApperoAnalyticsDelegate {
     /// Triggered when the user submits their feedback and rating (positive and neutral flows)
     func logApperoFeedback(rating: Int, feedback: String)
-    /// Triggered when the user submits their feedback (negative flow)
+    /// Triggered when the sets the star/smiley rating from 1-5
     func logRatingSelected(rating: Int)
 }
