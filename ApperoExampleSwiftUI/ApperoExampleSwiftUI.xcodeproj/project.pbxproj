@@ -21,6 +21,7 @@
 		98729B5E2C014305007227F6 /* ContentView.swift */ = {isa = PBXFileReference; indentWidth = 4; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; tabWidth = 4; };
 		98729B602C014305007227F6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		98729B632C014305007227F6 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		98E512602E60E45D006EB629 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +58,7 @@
 		98729B5B2C014305007227F6 /* ApperoExampleSwiftUI */ = {
 			isa = PBXGroup;
 			children = (
+				98E512602E60E45D006EB629 /* Info.plist */,
 				98729B5C2C014305007227F6 /* ApperoExampleSwiftUIApp.swift */,
 				98729B5E2C014305007227F6 /* ContentView.swift */,
 				98729B602C014305007227F6 /* Assets.xcassets */,
@@ -288,6 +290,7 @@
 				DEVELOPMENT_TEAM = 9HXPVNNC7G;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ApperoExampleSwiftUI/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -318,6 +321,7 @@
 				DEVELOPMENT_TEAM = 9HXPVNNC7G;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ApperoExampleSwiftUI/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
