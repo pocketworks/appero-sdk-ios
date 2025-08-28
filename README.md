@@ -11,6 +11,8 @@ The in-app feedback widget that drives organic growth.
 
 The Appero SDK for iOS is distributed as a Swift Package. To add the package, enter the project view in Xcode, and under the package dependencies tab tap the plus (+) button. When prompted with the package browser popup paste this repository URL into the search field
 
+__Important:__ If your app isn't localised or doesn't include an English localisation, please add `CFBundleAllowMixedLocalizations` to your info.plist and set its value to `true` or text in the Appero UI may not appear correctly. We're hoping to add more localisations to Appero in future releases.
+
 ```
 https://github.com/pocketworks/appero-sdk-ios 
 ```
