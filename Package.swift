@@ -22,7 +22,7 @@ let package = Package(
         .target(
             name: "Appero",
             resources: [
-                .copy("Resources/Media.xcassets")
+                .copy("Resources/Media.xcassets"),
                 .copy("Resources/Localizable.xcstrings")
             ]
         ),
