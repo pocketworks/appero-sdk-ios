@@ -21,9 +21,9 @@ public class Appero {
         static let kApperoData = "appero_unsent_experiences"
         static let kUserApperoDictionary = "appero_data"
         
-        static let defaultTitle = String(localized: "DefaultTitle")
-        static let defaultSubtitle = String(localized: "DefaultSubtitle")
-        static let defaultPrompt = String(localized: "DefaultPrompt")
+        static let defaultTitle = String(localized: "DefaultTitle", bundle: .appero)
+        static let defaultSubtitle = String(localized: "DefaultSubtitle", bundle: .appero)
+        static let defaultPrompt = String(localized: "DefaultPrompt", bundle: .appero)
         
         // Retry timer configuration
         static let retryTimerInterval: TimeInterval = 180.0 // 3 minutes

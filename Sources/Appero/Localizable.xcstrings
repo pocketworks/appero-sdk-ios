@@ -36,6 +36,150 @@
           }
         }
       }
+    },
+    "Done" : {
+      "comment" : "Button label",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done"
+          }
+        }
+      }
+    },
+    "NotNow" : {
+      "comment" : "Button label",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not now"
+          }
+        }
+      }
+    },
+    "Rate" : {
+      "comment" : "Button label",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rate"
+          }
+        }
+      }
+    },
+    "RateUsTitle" : {
+      "comment" : "Panel title after submitting feedback",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rate us"
+          }
+        }
+      }
+    },
+    "RatingPromptNegative" : {
+      "comment" : "Prompt triggered by rating selection in the panel",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "We’re sorry you’re not enjoying it. Could you tell us what went wrong?"
+          }
+        }
+      }
+    },
+    "RatingPromptNeutral" : {
+      "comment" : "Prompt triggered by rating selection in the panel",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What made your experience positive?"
+          }
+        }
+      }
+    },
+    "RatingPromptPositive" : {
+      "comment" : "Prompt triggered by rating selection in the panel",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What made your experience positive?"
+          }
+        }
+      }
+    },
+    "SendFeedback" : {
+      "comment" : "Button label",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send feedback"
+          }
+        }
+      }
+    },
+    "ThanksMessageNegative" : {
+      "comment" : "Thanks screen message",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your feedback helps us improve your experience. "
+          }
+        }
+      }
+    },
+    "ThanksMessageNeutral" : {
+      "comment" : "Thanks screen message",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your feedback is really appreciated."
+          }
+        }
+      }
+    },
+    "ThanksMessagePositive" : {
+      "comment" : "Thanks screen message",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your feedback helps us improve your experience."
+          }
+        }
+      }
+    },
+    "ThankYouTitle" : {
+      "comment" : "Panel title after submitting feedback",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thank you"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -114,6 +114,19 @@ private struct FeedbackView: View {
     
     @FocusState private var feedbackFieldFocused: Bool
     
+    var ratingPromptText: String {
+        switch rating {
+            case 1...2:
+                return String(localized: "RatingPromptNegative", bundle: .appero)
+            case 3:
+                return String(localized: "RatingPromptNeutral", bundle: .appero)
+            case 4...5:
+                return String(localized: "RatingPromptPositive", bundle: .appero)
+            default:
+                return "Unexpected state"
+        }
+    }
+    
     var body: some View {
         VStack() {
             Spacer()
@@ -136,7 +149,7 @@ private struct FeedbackView: View {
             })
             Spacer()
             if showFeedbackForm {
-                Text(strings.prompt)
+                Text(ratingPromptText)
                     .multilineTextAlignment(.center)
                     .font(Appero.instance.theme.bodyFont)
                     .foregroundColor(Appero.instance.theme.primaryTextColor)
@@ -170,7 +183,7 @@ private struct FeedbackView: View {
                     } label: {
                         HStack() {
                             Spacer()
-                            Text("Send feedback")
+                            Text(String(localized: "SendFeedback", bundle: .appero))
                                 .font(Appero.instance.theme.buttonFont)
                                 .foregroundStyle(Appero.instance.theme.buttonTextColor)
                             Spacer()
@@ -178,23 +191,10 @@ private struct FeedbackView: View {
                     }
                     .buttonStyle(ApperoButtonStyle())
                 }
-                .animation(.bouncy)
+                .animation(.bouncy, value: showFeedbackForm) // Fixed deprecated animation
             }
         }
         .frame(maxWidth: .infinity)
-    }
-    
-    var promptText: String {
-        switch rating {
-            case 1...2:
-                return "We’re sorry you’re not enjoying it. Could you tell us what went wrong?"
-            case 3:
-                return "What made your experience positive?"
-            case 4...5:
-                return "What made your experience positive?"
-            default:
-                return "Unexpected state"
-        }
     }
 }
 
@@ -220,7 +220,7 @@ private struct NegativeFlowView: View {
                 .lineLimit(2)
                 .multilineTextAlignment(.center)
             Spacer()
-            Text(strings.title)
+            Text(strings.subtitle)
                 .font(Appero.instance.theme.bodyFont)
                 .foregroundColor(Appero.instance.theme.primaryTextColor)
                 .multilineTextAlignment(.center)
@@ -254,7 +254,7 @@ private struct NegativeFlowView: View {
                 } label: {
                     HStack() {
                         Spacer()
-                        Text("Send feedback")
+                        Text(String(localized: "SendFeedback", bundle: .appero))
                             .font(Appero.instance.theme.buttonFont)
                             .foregroundStyle(Appero.instance.theme.buttonTextColor)
                         Spacer()
@@ -266,7 +266,7 @@ private struct NegativeFlowView: View {
                 } label: {
                     HStack() {
                         Spacer()
-                        Text("Not now")
+                        Text(String(localized: "NotNow", bundle: .appero))
                             .font(Appero.instance.theme.buttonFont)
                             .foregroundStyle(Appero.instance.theme.buttonColor)
                         Spacer()
@@ -378,11 +378,11 @@ private struct ThanksView: View {
     var message: String {
         switch rating {
             case 1...2:
-                return "Your feedback helps us improve your experience using \(productName)."
+                return String(localized: "ThanksMessageNegative", bundle: .appero)
             case 3:
-                return "Your feedback is really appreciated."
+                return String(localized: "ThanksMessageNeutral", bundle: .appero)
             case 4...5:
-                return "Your feedback helps us improve your experience using \(productName)."
+                return String(localized: "ThanksMessagePositive", bundle: .appero)
             default:
                 return "Unexpected state"
         }
@@ -391,9 +391,9 @@ private struct ThanksView: View {
     var title: String {
         switch rating {
             case 1...3:
-                return "Thank you"
+                return String(localized: "ThankYouTitle", bundle: .appero)
             case 4...5:
-                return "Rate us"
+                return String(localized: "RateUsTitle", bundle: .appero)
             default:
                 return "Unexpected state"
         }
@@ -420,7 +420,7 @@ private struct ThanksView: View {
                 } label: {
                     HStack() {
                         Spacer()
-                        Text("Rate")
+                        Text(String(localized: "Rate", bundle: .appero))
                         Spacer()
                     }
                 }
@@ -430,7 +430,7 @@ private struct ThanksView: View {
                 } label: {
                     HStack() {
                         Spacer()
-                        Text("Not now")
+                        Text(String(localized: "NotNow", bundle: .appero))
                         Spacer()
                     }
                 }
@@ -441,7 +441,7 @@ private struct ThanksView: View {
                 } label: {
                     HStack() {
                         Spacer()
-                        Text("Done")
+                        Text(String(localized: "Done", bundle: .appero))
                         Spacer()
                     }
                 }
@@ -455,4 +455,5 @@ private struct ThanksView: View {
 @available(iOS 16, *)
 #Preview {
     ApperoFeedbackView(productName: "SwiftUITest")
+        .environment(\.locale, .init(identifier: "en"))
 }
