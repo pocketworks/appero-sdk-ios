@@ -88,7 +88,9 @@ Use the property `shouldShowAppero` to determine whether or not to prompt should
 For UIKit based apps we leverage Apple's `UIHostingController` with the helper container view `ApperoPresentationView` which we can present as a child view controller over the top of whatever view controller you have displayed. Define the `UIHostingController<ApperoPresentationView>` as an instance var on your view controller.
 
 ```
-let apperoView = ApperoPresentationView() {
+let apperoView = ApperoPresentationView() { [weak self] in
+    
+     guard let self = self else { return }
     // remove the child view controller when the panel is dismissed
     self.hostingController?.willMove(toParent: nil)
     self.hostingController?.view.removeFromSuperview()

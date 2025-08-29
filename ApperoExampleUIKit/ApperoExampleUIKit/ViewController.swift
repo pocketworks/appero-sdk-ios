@@ -72,7 +72,12 @@ class ViewController: UIViewController {
     }
     
     func openAppero() {
-        let apperoView = ApperoPresentationView() {
+        let apperoView = ApperoPresentationView() { [weak self] in
+            
+            guard let self = self else {
+                return
+            }
+            
             // remove the child view controller when the panel is dismissed
             self.hostingController?.willMove(toParent: nil)
             self.hostingController?.view.removeFromSuperview()
