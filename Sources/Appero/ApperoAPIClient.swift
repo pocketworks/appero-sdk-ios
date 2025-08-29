@@ -47,7 +47,8 @@ struct ApperoAPIClient {
 
         let (responseBody, response) = try await ApperoAPIClient.session.data(for: request)
 
-        ApperoDebug.log(String(data: responseBody ?? Data(), encoding: .utf8) ?? "No response body")
+        // Left in for future response debugging
+        //ApperoDebug.log(String(data: responseBody ?? Data(), encoding: .utf8) ?? "No response body")
         
         guard let response = response as? HTTPURLResponse else {
             throw ApperoAPIError.noResponse
