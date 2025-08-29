@@ -19,8 +19,7 @@ public class Appero {
     
     struct Constants {
         static let kUserIdKey = "appero_user_id"
-        static let kApperoData = "appero_unsent_experiences"
-        static let kUserApperoDictionary = "appero_data"
+        static let kApperoDataFile = "ApperoData.json"
         
         static let defaultTitle = String(localized: "DefaultTitle", bundle: .appero)
         static let defaultSubtitle = String(localized: "DefaultSubtitle", bundle: .appero)
@@ -172,54 +171,75 @@ public class Appero {
         }
     }
     
-    /// Computed property for reading and writing ApperoData to UserDefaults
+    /// Computed property for reading and writing ApperoData to a JSON file
     private var data: ApperoData {
         get {
-            guard let data = UserDefaults.standard.data(forKey: Constants.kApperoData) else {
-                // Return default ApperoData if none exists
-                return ApperoData(
-                    unsentExperiences: [],
-                    unsentFeedback: [],
-                    feedbackPromptShouldDisplay: false,
-                    feedbackUIStrings: FeedbackUIStrings(
-                        title: Constants.defaultTitle,
-                        subtitle: Constants.defaultSubtitle,
-                        prompt: Constants.defaultPrompt
-                    ),
-                    lastPromptDate: nil,
-                    flowType: .neutral
-                )
+            // Try to load from file
+            if let savedData = loadApperoData() {
+                return savedData
             }
             
-            do {
-                let decoder = JSONDecoder()
-                return try decoder.decode(ApperoData.self, from: data)
-            } catch {
-                ApperoDebug.log("Error decoding local Appero data: \(error)")
-                // Return default ApperoData if decoding fails
-                return ApperoData(
-                    unsentExperiences: [],
-                    unsentFeedback: [],
-                    feedbackPromptShouldDisplay: false,
-                    feedbackUIStrings: FeedbackUIStrings(
-                        title: Constants.defaultTitle,
-                        subtitle: Constants.defaultSubtitle,
-                        prompt: Constants.defaultPrompt
-                    ),
-                    lastPromptDate: nil,
-                    flowType: .neutral
-                )
-            }
+            // Return default ApperoData if none exists
+            return ApperoData(
+                unsentExperiences: [],
+                unsentFeedback: [],
+                feedbackPromptShouldDisplay: false,
+                feedbackUIStrings: FeedbackUIStrings(
+                    title: Constants.defaultTitle,
+                    subtitle: Constants.defaultSubtitle,
+                    prompt: Constants.defaultPrompt
+                ),
+                lastPromptDate: nil,
+                flowType: .neutral
+            )
         }
         set {
-            do {
-                let encoder = JSONEncoder()
-                let data = try encoder.encode(newValue)
-                UserDefaults.standard.set(data, forKey: Constants.kApperoData)
-                ApperoDebug.log("Saved local data successfully")
-            } catch {
-                ApperoDebug.log("Error encoding local Appero data: \(error)")
-            }
+            saveApperoData(newValue)
+        }
+    }
+    
+    /// Gets the file URL for the ApperoData JSON file in the documents directory
+    private func getApperoDataFileURL() -> URL {
+        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        return documentsDirectory.appendingPathComponent(Constants.kApperoDataFile)
+    }
+    
+    /// Saves ApperoData to a JSON file
+    private func saveApperoData(_ apperoData: ApperoData) {
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = .prettyPrinted
+        
+        do {
+            let data = try encoder.encode(apperoData)
+            let fileURL = getApperoDataFileURL()
+            try data.write(to: fileURL)
+            ApperoDebug.log("Saved ApperoData to file successfully")
+        } catch {
+            ApperoDebug.log("Error saving ApperoData to file: \(error)")
+        }
+    }
+    
+    /// Loads ApperoData from a JSON file
+    private func loadApperoData() -> ApperoData? {
+        let fileURL = getApperoDataFileURL()
+        
+        // Check if file exists
+        guard FileManager.default.fileExists(atPath: fileURL.path) else {
+            ApperoDebug.log("ApperoData file does not exist")
+            return nil
+        }
+        
+        do {
+            let data = try Data(contentsOf: fileURL)
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            let apperoData = try decoder.decode(ApperoData.self, from: data)
+            ApperoDebug.log("Loaded ApperoData from file successfully")
+            return apperoData
+        } catch {
+            ApperoDebug.log("Error loading ApperoData from file: \(error)")
+            return nil
         }
     }
  
@@ -602,10 +622,19 @@ public class Appero {
     
     /// Resets all local data (queued experiences, user ID etc). You might use this when the user logs out or when testing your integration, however in typical use it's not required.
     public func reset() {
-        // Clear all UserDefaults keys
+        // Clear user ID from UserDefaults
         UserDefaults.standard.removeObject(forKey: Constants.kUserIdKey)
-        UserDefaults.standard.removeObject(forKey: Constants.kApperoData)
-        UserDefaults.standard.removeObject(forKey: Constants.kUserApperoDictionary)
+        
+        // Delete the ApperoData file
+        let fileURL = getApperoDataFileURL()
+        do {
+            if FileManager.default.fileExists(atPath: fileURL.path) {
+                try FileManager.default.removeItem(at: fileURL)
+                ApperoDebug.log("Deleted ApperoData file successfully")
+            }
+        } catch {
+            ApperoDebug.log("Error deleting ApperoData file: \(error)")
+        }
         
         // Clear instance variables
         self.clientId = nil
