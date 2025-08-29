@@ -216,6 +216,7 @@ public class Appero {
                 let encoder = JSONEncoder()
                 let data = try encoder.encode(newValue)
                 UserDefaults.standard.set(data, forKey: Constants.kApperoData)
+                ApperoDebug.log("Saved local data successfully")
             } catch {
                 ApperoDebug.log("Error encoding local Appero data: \(error)")
             }

@@ -67,6 +67,10 @@ class ViewController: UIViewController {
         }
     }
     
+    @IBAction func triggerFeedbackPrompt(sender: Any?) {
+        openAppero()
+    }
+    
     func openAppero() {
         let apperoRatingView = ApperoPresentationView(productName: "ApperoExampleUIKit") {
             // remove the child view controller when the panel is dismissed
