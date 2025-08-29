@@ -11,11 +11,11 @@ The in-app feedback widget that drives organic growth.
 
 The Appero SDK for iOS is distributed as a Swift Package. To add the package, enter the project view in Xcode, and under the package dependencies tab tap the plus (+) button. When prompted with the package browser popup paste this repository URL into the search field
 
-__Important:__ If your app isn't localised or doesn't include an English localisation, please add `CFBundleAllowMixedLocalizations` to your info.plist and set its value to `true` or text in the Appero UI may not appear correctly. We're hoping to add more localisations to Appero in future releases.
-
 ```
 https://github.com/pocketworks/appero-sdk-ios 
 ```
+
+__Important:__ If your app isn't localised or doesn't include an English localisation, please add `CFBundleAllowMixedLocalizations` to your info.plist and set its value to `true` or text in the Appero UI may not appear correctly. We're hoping to add more localisations to Appero in future releases.
 
 ## Getting Started
 
@@ -75,7 +75,7 @@ struct ContentView: View {
         YourAppsView {
         }
         .sheet(isPresented: $showingAppero) {
-            ApperoRatingView(productName: "Your App")
+            ApperoFeedbackView()
         }
     }
 }
@@ -88,14 +88,14 @@ Use the property `shouldShowAppero` to determine whether or not to prompt should
 For UIKit based apps we leverage Apple's `UIHostingController` with the helper container view `ApperoPresentationView` which we can present as a child view controller over the top of whatever view controller you have displayed. Define the `UIHostingController<ApperoPresentationView>` as an instance var on your view controller.
 
 ```
-let apperoRatingView = ApperoPresentationView(productName: "Your Product Name") {
+let apperoView = ApperoPresentationView() {
     // remove the child view controller when the panel is dismissed
     self.hostingController?.willMove(toParent: nil)
     self.hostingController?.view.removeFromSuperview()
     self.hostingController?.removeFromParent()
 }
 
-hostingController = UIHostingController(rootView: apperoRatingView)
+hostingController = UIHostingController(rootView: apperoView)
 hostingController?.view.translatesAutoresizingMaskIntoConstraints = false
 
 if let hostingController = hostingController {
@@ -118,20 +118,6 @@ You will likely wish to create your own theme so the Appero UI respects your app
 
 ```
 Appero.instance.theme = DarkTheme()
-```
-
-## Handling User Sessions
-
-By default the Appero SDK tracks user experience through a points value recorded against a unique user ID that is generated on demand and then persisted in UserDefaults. If you have an existing unique user ID, for example from an account based system, this can be substituted instead.
-
-```
-Appero.instance.setUser("your_unique_user_id")
-```
-
-When using a custom user ID it's important to remember to reset the user on Appero when a logout occurs. This allows the experience score to be recorded independently on one device for multiple users. The flag indicating whether a user has submitted feedback or not is also tied to their user ID.
-
-```
-Appero.instance.resetUser()
 ```
 
 ## Connecting to 3rd Party Analytics
