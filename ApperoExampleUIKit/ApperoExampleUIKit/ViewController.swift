@@ -72,14 +72,14 @@ class ViewController: UIViewController {
     }
     
     func openAppero() {
-        let apperoRatingView = ApperoPresentationView(productName: "ApperoExampleUIKit") {
+        let apperoView = ApperoPresentationView() {
             // remove the child view controller when the panel is dismissed
             self.hostingController?.willMove(toParent: nil)
             self.hostingController?.view.removeFromSuperview()
             self.hostingController?.removeFromParent()
         }
         
-        hostingController = UIHostingController(rootView: apperoRatingView)
+        hostingController = UIHostingController(rootView: apperoView)
         hostingController?.view.translatesAutoresizingMaskIntoConstraints = false
         
         if let hostingController = hostingController {

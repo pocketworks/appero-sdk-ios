@@ -126,9 +126,7 @@ struct ContentView: View {
         }
         .padding()
         .sheet(isPresented: $showingAppero) {
-            ApperoFeedbackView(
-                productName: Bundle.main.bundleIdentifier ?? "My app"
-            )
+            ApperoFeedbackView()
         }
     }
     
