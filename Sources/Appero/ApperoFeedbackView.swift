@@ -18,7 +18,6 @@ public struct ApperoFeedbackView: View {
     
     @Environment(\.presentationMode) var presentationMode
     
-    let productName: String
     let strings: Appero.FeedbackUIStrings
     
     @State private var selectedPanelHeight = PresentationDetent.fraction(0.33)
@@ -31,8 +30,7 @@ public struct ApperoFeedbackView: View {
     private let thanksDetent = PresentationDetent.fraction(0.25)
     
     
-    public init(productName: String) {
-        self.productName = productName
+    public init() {
         self.flowType = Appero.instance.flowType
         self.strings = Appero.instance.feedbackUIStrings
     }
@@ -53,7 +51,7 @@ public struct ApperoFeedbackView: View {
                 })
                 
                 if showThanks {
-                    ThanksView(productName: productName, rating: rating) {
+                    ThanksView(rating: rating) {
                         presentationMode.wrappedValue.dismiss()
                     }
                     .padding(.horizontal)
@@ -61,7 +59,7 @@ public struct ApperoFeedbackView: View {
                     
                     switch flowType {
                         case .positive, .neutral:
-                            FeedbackView(productName: productName, strings: Appero.instance.feedbackUIStrings, onRatingChosen: { rating in
+                            FeedbackView(strings: Appero.instance.feedbackUIStrings, onRatingChosen: { rating in
                                 selectedPanelHeight = feedbackDetent
                             }, onSubmit: { rating, feedback in
                                 Task {
@@ -103,7 +101,6 @@ private struct FeedbackView: View {
     
     let kFeedbackLimit = 120
     
-    let productName: String
     let strings: Appero.FeedbackUIStrings
     let onRatingChosen: (_ rating: Int)->(Void)
     let onSubmit: (_ rating: Int, _ feedback: String)->(Void)
@@ -340,7 +337,6 @@ private struct RatingView: View {
 @available(iOS 16, *)
 public struct ApperoPresentationView: View {
     
-    let productName: String
     let onDismiss: (()->())?
      
     @State var presented = true
@@ -348,10 +344,8 @@ public struct ApperoPresentationView: View {
     
     /// This view is a convenience for showing the Appero feedback UI on a UIKit app in a UIHostingController. The hosting view controller should be added as a child view controller of the view controller where you plan to allow the feedback sheet to appear. See the ApperoExampleUIKit project for a sample implementation of this approach.
     /// - Parameters:
-    ///   - productName: the product name you want to appear in the feedback UI
     ///   - onDismiss: the action to be carried out on dismissing the panel, typically to remove the child view controller from its parent.
-    public init(productName: String, onDismiss: (() -> ())?) {
-        self.productName = productName
+    public init(onDismiss: (() -> ())?) {
         self.onDismiss = onDismiss
     }
     
@@ -360,10 +354,7 @@ public struct ApperoPresentationView: View {
         .sheet(isPresented: $presented, onDismiss: {
             onDismiss?()
         }) {
-            let strings = Appero.instance.feedbackUIStrings
-            ApperoFeedbackView(
-                productName: productName
-            )
+            ApperoFeedbackView()
         }
     }
 }
@@ -371,7 +362,6 @@ public struct ApperoPresentationView: View {
 
 private struct ThanksView: View {
     
-    let productName: String
     let rating: Int
     let onDismiss: ()->()
     
@@ -454,6 +444,6 @@ private struct ThanksView: View {
 
 @available(iOS 16, *)
 #Preview {
-    ApperoFeedbackView(productName: "SwiftUITest")
+    ApperoFeedbackView()
         .environment(\.locale, .init(identifier: "en"))
 }
