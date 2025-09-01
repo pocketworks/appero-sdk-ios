@@ -214,7 +214,6 @@ public class Appero {
             let data = try encoder.encode(apperoData)
             let fileURL = getApperoDataFileURL()
             try data.write(to: fileURL)
-            ApperoDebug.log("Saved ApperoData to file successfully")
         } catch {
             ApperoDebug.log("Error saving ApperoData to file: \(error)")
         }
@@ -226,7 +225,6 @@ public class Appero {
         
         // Check if file exists
         guard FileManager.default.fileExists(atPath: fileURL.path) else {
-            ApperoDebug.log("ApperoData file does not exist")
             return nil
         }
         
@@ -235,7 +233,6 @@ public class Appero {
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .iso8601
             let apperoData = try decoder.decode(ApperoData.self, from: data)
-            ApperoDebug.log("Loaded ApperoData from file successfully")
             return apperoData
         } catch {
             ApperoDebug.log("Error loading ApperoData from file: \(error)")
@@ -349,6 +346,8 @@ public class Appero {
                     authorization: apiKey
                 )
                 
+                ApperoDebug.log("Experience posted successfully")
+                
                 successfullyProcessed.append(experience)
                 handleExperienceResponse(response: try JSONDecoder().decode(ExperienceResponse.self, from: data))
                 
@@ -410,6 +409,8 @@ public class Appero {
                     ],
                     method: .post,
                     authorization: apiKey
+                    
+                    ApperoDebug.log("Feedback posted successfully")
                 )
                 
                 successfullyProcessed.append(feedback)
