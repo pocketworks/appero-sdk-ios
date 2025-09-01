@@ -334,7 +334,7 @@ public class Appero {
             
             do {
                 let experienceData: [String: Any] = await [
-                    "user_id": clientId,
+                    "client_id": clientId,
                     "date": experience.date.ISO8601Format(),
                     "value": experience.value.rawValue,
                     "context": experience.context ?? "",
