@@ -1,6 +1,6 @@
-//  ApperoTheme.swift
-//  ApperoExampleSwiftUI
 //
+//  ApperoTheme.swift
+//  Copyright Pocketworks Mobile Ltd.
 //  Created by Rory Prior on 28/05/2024.
 //
 
@@ -85,15 +85,15 @@ public struct DefaultTheme: ApperoTheme {
     public func imageFor(rating: ApperoRating) -> Image {
         switch rating {
             case .veryPoor:
-                return Image("rating1", bundle: Bundle.appero)
+                return Image("rating1", bundle: .appero)
             case .poor:
-                return Image("rating2", bundle: Bundle.appero)
+                return Image("rating2", bundle: .appero)
             case .average:
-                return Image("rating3", bundle: Bundle.appero)
+                return Image("rating3", bundle: .appero)
             case .good:
-                return Image("rating4", bundle: Bundle.appero)
+                return Image("rating4", bundle: .appero)
             case .veryGood:
-                return Image("rating5", bundle: Bundle.appero)
+                return Image("rating5", bundle: .appero)
         }
     }
 }
@@ -150,15 +150,15 @@ public struct LightTheme: ApperoTheme {
     public func imageFor(rating: ApperoRating) -> Image {
         switch rating {
             case .veryPoor:
-                return Image("rating1", bundle: Bundle.appero)
+                return Image("rating1", bundle: .appero)
             case .poor:
-                return Image("rating2", bundle: Bundle.appero)
+                return Image("rating2", bundle: .appero)
             case .average:
-                return Image("rating3", bundle: Bundle.appero)
+                return Image("rating3", bundle: .appero)
             case .good:
-                return Image("rating4", bundle: Bundle.appero)
+                return Image("rating4", bundle: .appero)
             case .veryGood:
-                return Image("rating5", bundle: Bundle.appero)
+                return Image("rating5", bundle: .appero)
         }
     }
 }
@@ -215,15 +215,15 @@ public struct DarkTheme: ApperoTheme {
     public func imageFor(rating: ApperoRating) -> Image {
         switch rating {
             case .veryPoor:
-                return Image("rating1-alt", bundle: Bundle.appero)
+                return Image("rating1-alt", bundle: .appero)
             case .poor:
-                return Image("rating2-alt", bundle: Bundle.appero)
+                return Image("rating2-alt", bundle: .appero)
             case .average:
-                return Image("rating3-alt", bundle: Bundle.appero)
+                return Image("rating3-alt", bundle: .appero)
             case .good:
-                return Image("rating4-alt", bundle: Bundle.appero)
+                return Image("rating4-alt", bundle: .appero)
             case .veryGood:
-                return Image("rating5-alt", bundle: Bundle.appero)
+                return Image("rating5-alt", bundle: .appero)
         }
     }
 }

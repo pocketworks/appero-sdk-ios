@@ -15,6 +15,8 @@ The Appero SDK for iOS is distributed as a Swift Package. To add the package, en
 https://github.com/pocketworks/appero-sdk-ios 
 ```
 
+__Important:__ If your app isn't localised or doesn't include an English localisation, please add `CFBundleAllowMixedLocalizations` to your info.plist and set its value to `true` or text in the Appero UI may not appear correctly. We're hoping to add more localisations to Appero in future releases.
+
 ## Getting Started
 
 The Appero SDK for iOS is based around a shared instance model that can be accessed from anywhere in your code once initialised. We recommend initialising Appero in either your main view's init() method for a SwiftUI app or in applicationDidFinishLaunching in a storyboard/UIKit based app.
@@ -22,13 +24,13 @@ The Appero SDK for iOS is based around a shared instance model that can be acces
 ```
 Appero.instance.start(
     apiKey: "your_api_key",
-    clientId: "your_client_id"
+    clientId: "your_user_id"
 )
 ```
 
 You can then access the instance to access the SDK's functionality from anywhere in your app it makes sense.
 
-For example triggering the send feedback API can to be called as such
+For example triggering the send feedback API can to be called as such:
 
 ```
 Task {
@@ -41,15 +43,20 @@ Task {
 
 ## Monitoring User Experience
 
-One of the core ideas in Appero is that we're tracking positive and negative user interactions to build an experience score. Once this score crosses a threshold we've defined, we want to prompt the user to give us their feedback, be it positive or constructive. We provide two mechanisms to track this experience, either using `log(experience: Experience)` or `log(points: Int)`. Logging points as an integrer allows you to define your own scale, or you can use our Experience enum that defines a Likert scale from very positive to very negative. The threshold value can set using the property `ratingThreshold`.
+One of the core ideas in Appero is that we're tracking positive and negative user experiences. Once the number of experiences logged crosses a threshold we've defined, we want to prompt the user to give us their feedback, be it positive or constructive. We call `log(experience: Experience, context: String)` to record individual experiences. The context string is used to categorise the experience and can be used to track outcomes of user flows. 
 
 ```
-Appero.instance.log(experience: .strongPositive)
+Appero.instance.log(experience: .strongPositive, context: "User started free trial")
 ```
 
-When adding Appero to a flow in your app, consider each point where the user can have a positive experience, a neutral one or a negative one and work out a threshold score that makes sense for it overall.
+Typical types of user experience you will want to add logging for are:
+* Completion of flows - positive if the user achieved what they wanted to or negative if they didn't.
+* In response to feedback requests (e.g. tapping thumbs up or down to a search result or suggestion to indicate its relevance)
+* Error states; you can determine the severity of these by considering if the error is temporary (network connection dropping) or more serious such as an error response from your server.
+* Starting or cancelling of subscriptions
 
-At some point you may wish to reset the users experience points and reprompt them for feedback. This should be done cautiously, we recommend recording and check a date value of when the user was last prompted.
+It's also possible to get creative, for example setting up a time threshold the user remains on a given screen to indicate positive behaviour if that's what we desire or negative if it indicates the inability to complete a task easily.
+
 
 ```
 Appero.instance.resetExperienceAndPrompt()
@@ -68,25 +75,29 @@ struct ContentView: View {
         YourAppsView {
         }
         .sheet(isPresented: $showingAppero) {
-            ApperoRatingView(productName: "Your App")
+            ApperoFeedbackView()
         }
     }
 }
 ```
+
+The UI text is configurable through the Appero dashboard and can be configured separately for the negative and neutral/positive flow.
 
 Use the property `shouldShowAppero` to determine whether or not to prompt should be shown based on the experience score and whether feedback has already been submitted.
 
 For UIKit based apps we leverage Apple's `UIHostingController` with the helper container view `ApperoPresentationView` which we can present as a child view controller over the top of whatever view controller you have displayed. Define the `UIHostingController<ApperoPresentationView>` as an instance var on your view controller.
 
 ```
-let apperoRatingView = ApperoPresentationView(productName: "Your Product Name") {
+let apperoView = ApperoPresentationView() { [weak self] in
+    
+     guard let self = self else { return }
     // remove the child view controller when the panel is dismissed
     self.hostingController?.willMove(toParent: nil)
     self.hostingController?.view.removeFromSuperview()
     self.hostingController?.removeFromParent()
 }
 
-hostingController = UIHostingController(rootView: apperoRatingView)
+hostingController = UIHostingController(rootView: apperoView)
 hostingController?.view.translatesAutoresizingMaskIntoConstraints = false
 
 if let hostingController = hostingController {
@@ -101,7 +112,6 @@ if let hostingController = hostingController {
 }
 ```
 
-
 ## Basic Themeing of the UI
 
 Appero by default uses the standard iOS system colours and responds to changes to the appearance as the rest of the system dose, supporting light and dark mode. Appero also comes supplied with a light and dark theme, these both have a fixed colour palette that doesn't change in response to system appearance changes.
@@ -110,20 +120,6 @@ You will likely wish to create your own theme so the Appero UI respects your app
 
 ```
 Appero.instance.theme = DarkTheme()
-```
-
-## Handling User Sessions
-
-By default the Appero SDK tracks user experience through a points value recorded against a unique user ID that is generated on demand and then persisted in UserDefaults. If you have an existing unique user ID, for example from an account based system, this can be substituted instead.
-
-```
-Appero.instance.setUser("your_unique_user_id")
-```
-
-When using a custom user ID it's important to remember to reset the user on Appero when a logout occurs. This allows the experience score to be recorded independently on one device for multiple users. The flag indicating whether a user has submitted feedback or not is also tied to their user ID.
-
-```
-Appero.instance.resetUser()
 ```
 
 ## Connecting to 3rd Party Analytics

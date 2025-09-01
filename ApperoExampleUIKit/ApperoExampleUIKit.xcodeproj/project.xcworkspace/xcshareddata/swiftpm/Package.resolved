@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pocketworks/appero-sdk-ios",
       "state" : {
-        "branch" : "main",
-        "revision" : "d7fc7fbc80c6b12c7f3ab4de06a515ba491f81ef"
+        "branch" : "feature/frustration-flow",
+        "revision" : "81202ec6166a463f6905b991e13cf7b6e028b917"
       }
     }
   ],

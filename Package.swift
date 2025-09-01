@@ -1,8 +1,9 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.7
 import PackageDescription
 
 let package = Package(
     name: "Appero",
+    defaultLocalization: "en",
     platforms: [
             .iOS(.v15)
     ],
@@ -21,7 +22,8 @@ let package = Package(
         .target(
             name: "Appero",
             resources: [
-                .copy("Resources/Media.xcassets")
+                .copy("Resources/Media.xcassets"),
+                .copy("Resources/Localizable.xcstrings")
             ]
         ),
         .testTarget(
