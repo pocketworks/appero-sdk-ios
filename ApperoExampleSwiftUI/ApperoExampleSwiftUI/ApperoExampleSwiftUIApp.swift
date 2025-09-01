@@ -18,19 +18,21 @@ struct ApperoExampleSwiftUIApp: App {
     }
     
     init() {
-        // Initialize Appero with the new API
-        Appero.instance.start(
-            apiKey: "PerD+p+Ciw2B9l6HuPucpLABI6wuLkiM2iwLPpDBYEw",
-            clientId: "test_user_1"
-        )
-        
-        Appero.instance.isDebug = true
-        
-        // Set the theme to use for the Appero UI
-        Appero.instance.theme = DefaultTheme()
         
         // For the demo app we want to reset things on each launch
         // You likely wouldn't want to do this in a real app
         Appero.instance.reset()
+        
+        // Initialize Appero with the new API
+        Appero.instance.start(
+            apiKey: "your api key",
+            clientId: "test_user_1"
+        )
+        
+        // Show debug info in the console
+        Appero.instance.isDebug = true
+        
+        // Set the theme to use for the Appero UI
+        Appero.instance.theme = DefaultTheme()
     }
 }
