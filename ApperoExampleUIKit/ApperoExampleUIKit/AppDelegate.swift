@@ -19,7 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         
         Appero.instance.start(
             apiKey: "your api key",
-            clientId: "test_user_1"
+            userId: "test_user_1"
         )
         
         Appero.instance.theme = DefaultTheme()  // set the theme to use for the Appero UI

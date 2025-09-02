@@ -26,7 +26,7 @@ struct ApperoExampleSwiftUIApp: App {
         // Initialize Appero with the new API
         Appero.instance.start(
             apiKey: "your api key",
-            clientId: "test_user_1"
+            userId: "test_user_1"
         )
         
         // Show debug info in the console

@@ -94,7 +94,10 @@ public struct ApperoFeedbackView: View {
                 }
             }
         }
-        .background(Appero.instance.theme.backgroundColor)
+
+        .background(Appero.instance.theme.usesSystemMaterial ? .regularMaterial : .ultraThick)
+        .background(Appero.instance.theme.usesSystemMaterial ? .clear : Appero.instance.theme.backgroundColor)
+        
         .presentationDetents([thanksDetent, feedbackDetent, ratingDetent], selection: $selectedPanelHeight)
         .presentationDragIndicator(.hidden)
         .animation(.easeOut(duration: 0.2), value: selectedPanelHeight)

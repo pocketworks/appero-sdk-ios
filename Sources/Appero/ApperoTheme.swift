@@ -18,6 +18,8 @@ public protocol ApperoTheme {
     var bodyFont: Font { get }
     var buttonFont: Font { get }
     var captionFont: Font { get }
+    /// Use native material effects for the Appero UI background, defaults to false (solid colour background)
+    var usesSystemMaterial: Bool { get }
     func imageFor(rating: ApperoRating) -> Image
 }
 
@@ -68,6 +70,10 @@ public struct DefaultTheme: ApperoTheme {
     
     public var bodyFont: Font {
         return Font.system(.body, design: .default)
+    }
+    
+    public var usesSystemMaterial: Bool {
+        return true
     }
     
     public var buttonFont: Font {
@@ -145,6 +151,10 @@ public struct LightTheme: ApperoTheme {
     
     public var captionFont: Font {
         return Font.custom("Helvetica", size: 14, relativeTo: .caption)
+    }
+    
+    public var usesSystemMaterial: Bool {
+        return false
     }
     
     public func imageFor(rating: ApperoRating) -> Image {
@@ -225,6 +235,10 @@ public struct DarkTheme: ApperoTheme {
             case .veryGood:
                 return Image("rating5-alt", bundle: .appero)
         }
+    }
+    
+    public var usesSystemMaterial: Bool {
+        return false
     }
 }
 
