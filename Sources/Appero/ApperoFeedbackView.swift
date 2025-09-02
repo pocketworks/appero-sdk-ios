@@ -7,7 +7,7 @@
 import SwiftUI
 
 /// Provides the Appero feedback UI within a view to be displayed inside a modal sheet
-@available(iOS 16, *)
+@available(iOS 16.4, *)
 public struct ApperoFeedbackView: View {
     
     enum ApperoPanel {
@@ -19,6 +19,7 @@ public struct ApperoFeedbackView: View {
     @Environment(\.presentationMode) var presentationMode
     
     let strings: Appero.FeedbackUIStrings
+    let usesSystemMaterial = true // Appero.instance.theme.usesSystemMaterial
     
     @State private var selectedPanelHeight = PresentationDetent.fraction(0.33)
     @State private var flowType: Appero.FlowType
@@ -94,9 +95,8 @@ public struct ApperoFeedbackView: View {
                 }
             }
         }
-
-        .background(Appero.instance.theme.usesSystemMaterial ? .regularMaterial : .ultraThick)
-        .background(Appero.instance.theme.usesSystemMaterial ? .clear : Appero.instance.theme.backgroundColor)
+        .presentationBackground(usesSystemMaterial ? .regularMaterial : .ultraThick)
+        .background(usesSystemMaterial ? .clear : Appero.instance.theme.backgroundColor)
         
         .presentationDetents([thanksDetent, feedbackDetent, ratingDetent], selection: $selectedPanelHeight)
         .presentationDragIndicator(.hidden)
@@ -342,7 +342,7 @@ private struct RatingView: View {
 }
 
 /// Supports showing the Appero panel from UIKit in a hosting controller.
-@available(iOS 16, *)
+@available(iOS 16.4, *)
 public struct ApperoPresentationView: View {
     
     let onDismiss: (()->())?
@@ -450,8 +450,14 @@ private struct ThanksView: View {
     }
 }
 
-@available(iOS 16, *)
+@available(iOS 17, *)
 #Preview {
-    ApperoFeedbackView(flowType: .negative)
-        .environment(\.locale, .init(identifier: "en"))
+    @Previewable @State var showPanel = true
+    Color(.red)
+    .frame(width: .infinity, height: .infinity)
+    .sheet(isPresented: $showPanel) {
+        ApperoFeedbackView(flowType: .negative)
+            .environment(\.locale, .init(identifier: "en"))
+    }
+    
 }
