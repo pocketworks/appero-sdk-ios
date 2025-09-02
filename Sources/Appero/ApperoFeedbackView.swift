@@ -41,6 +41,15 @@ public struct ApperoFeedbackView: View {
     }
     
     public var body: some View {
+        if usesSystemMaterial {
+            feedbackBody
+                .presentationBackground(.regularMaterial)
+        } else {
+            feedbackBody
+        }
+    }
+    
+    public var feedbackBody: some View {
         HStack(alignment: .top) {
             VStack(alignment: .center) {
                 HStack(alignment: .top, content: {
@@ -95,9 +104,7 @@ public struct ApperoFeedbackView: View {
                 }
             }
         }
-        .presentationBackground(usesSystemMaterial ? .regularMaterial : .ultraThick)
         .background(usesSystemMaterial ? .clear : Appero.instance.theme.backgroundColor)
-        
         .presentationDetents([thanksDetent, feedbackDetent, ratingDetent], selection: $selectedPanelHeight)
         .presentationDragIndicator(.hidden)
         .animation(.easeOut(duration: 0.2), value: selectedPanelHeight)
