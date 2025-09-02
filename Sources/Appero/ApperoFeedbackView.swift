@@ -30,8 +30,12 @@ public struct ApperoFeedbackView: View {
     private let thanksDetent = PresentationDetent.fraction(0.25)
     
     
-    public init() {
-        self.flowType = Appero.instance.flowType
+    public init(flowType: Appero.FlowType? = nil) {
+        if let flowType = flowType {
+            self.flowType = flowType
+        } else {
+            self.flowType = Appero.instance.flowType
+        }
         self.strings = Appero.instance.feedbackUIStrings
     }
     
@@ -85,6 +89,7 @@ public struct ApperoFeedbackView: View {
                                 self.rating = 1
                                 self.showThanks = true
                             }
+                            .padding(.horizontal)
                     }
                 }
             }
@@ -444,6 +449,6 @@ private struct ThanksView: View {
 
 @available(iOS 16, *)
 #Preview {
-    ApperoFeedbackView()
+    ApperoFeedbackView(flowType: .negative)
         .environment(\.locale, .init(identifier: "en"))
 }

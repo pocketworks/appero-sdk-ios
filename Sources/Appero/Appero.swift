@@ -408,10 +408,9 @@ public class Appero {
                         "rating": String(feedback.rating)
                     ],
                     method: .post,
-                    authorization: apiKey
-                    
-                    ApperoDebug.log("Feedback posted successfully")
+                    authorization: apiKey                    
                 )
+                ApperoDebug.log("Feedback posted successfully")
                 
                 successfullyProcessed.append(feedback)
                 ApperoDebug.log("Successfully sent queued feedback \(index + 1)/\(currentData.unsentFeedback.count)")
