@@ -19,7 +19,7 @@ public struct ApperoFeedbackView: View {
     @Environment(\.presentationMode) var presentationMode
     
     let strings: Appero.FeedbackUIStrings
-    let usesSystemMaterial = true // Appero.instance.theme.usesSystemMaterial
+    let usesSystemMaterial = Appero.instance.theme.usesSystemMaterial
     
     @State private var selectedPanelHeight = PresentationDetent.fraction(0.33)
     @State private var flowType: Appero.FlowType
@@ -456,7 +456,7 @@ private struct ThanksView: View {
     Color(.red)
     .frame(width: .infinity, height: .infinity)
     .sheet(isPresented: $showPanel) {
-        ApperoFeedbackView(flowType: .negative)
+        ApperoFeedbackView(flowType: .positive)
             .environment(\.locale, .init(identifier: "en"))
     }
     
