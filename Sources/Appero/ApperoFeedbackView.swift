@@ -92,13 +92,17 @@ public struct ApperoFeedbackView: View {
                             
                         case .negative:
                             
-                            NegativeFlowView(strings: Appero.instance.feedbackUIStrings) {
-                                //
-                            } onSubmit: { feedback in
-                                Appero.instance.analyticsDelegate?.logApperoFeedback(rating: 1, feedback: feedback)
-                                self.rating = 1
-                                self.showThanks = true
-                            }
+                            NegativeFlowView(
+                                strings: Appero.instance.feedbackUIStrings,
+                                onCancel: {
+                                    presentationMode.wrappedValue.dismiss()
+                                },
+                                onSubmit: { feedback in
+                                    Appero.instance.analyticsDelegate?.logApperoFeedback(rating: 1, feedback: feedback)
+                                    self.rating = 1
+                                    self.showThanks = true
+                                }
+                            )
                             .padding(.horizontal)
                     }
                 }
@@ -463,7 +467,7 @@ private struct ThanksView: View {
     Color(.red)
     .frame(width: .infinity, height: .infinity)
     .sheet(isPresented: $showPanel) {
-        ApperoFeedbackView(flowType: .positive)
+        ApperoFeedbackView(flowType: .negative)
             .environment(\.locale, .init(identifier: "en"))
     }
     
