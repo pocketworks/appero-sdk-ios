@@ -10,7 +10,7 @@ final class ApperoTests: XCTestCase {
         appero = Appero.instance
         // Clear any existing data
         appero.reset()
-        appero.start(apiKey: "test_api_key", clientId: "test_client_id")
+        appero.start(apiKey: "test_api_key", userId: "test_client_id")
     }
     
     override func tearDown() {
@@ -23,7 +23,7 @@ final class ApperoTests: XCTestCase {
     func testClientIdGeneration() {
         // Test that a client ID is generated when none is provided
         appero.reset()
-        appero.start(apiKey: "test_api_key", clientId: nil)
+        appero.start(apiKey: "test_api_key", userId: nil)
         
         XCTAssertNotNil(appero.userId)
         XCTAssertFalse(appero.userId!.isEmpty)
@@ -165,7 +165,7 @@ final class ApperoTests: XCTestCase {
         XCTAssertFalse(appero.shouldShowFeedbackPrompt) // Should be false by default
         
         // Verify that we need to reinitialize after reset
-        appero.start(apiKey: "test_api_key", clientId: "test_client_id")
+        appero.start(apiKey: "test_api_key", userId: "test_client_id")
         XCTAssertEqual(appero.userId, "test_client_id")
     }
     

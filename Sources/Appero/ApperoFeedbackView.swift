@@ -25,11 +25,11 @@ public struct ApperoFeedbackView: View {
     @State private var flowType: Appero.FlowType
     @State private var rating: Int = 0
     @State private var showThanks: Bool = false
+    @State private var sheetContentHeight = CGFloat(0)
     
     private let ratingDetent = PresentationDetent.fraction(0.33)
     private let feedbackDetent = PresentationDetent.fraction(0.7)
     private let thanksDetent = PresentationDetent.fraction(0.25)
-    
     
     public init(flowType: Appero.FlowType? = nil) {
         if let flowType = flowType {
@@ -63,12 +63,14 @@ public struct ApperoFeedbackView: View {
                     .padding(.top)
                     .padding(.trailing)
                 })
+
                 
                 if showThanks {
                     ThanksView(rating: rating) {
                         presentationMode.wrappedValue.dismiss()
                     }
                     .padding(.horizontal)
+                    .background(HeightReaderView(height: $sheetContentHeight))
                 } else {
                     
                     switch flowType {
@@ -89,9 +91,9 @@ public struct ApperoFeedbackView: View {
                                 Appero.instance.shouldShowFeedbackPrompt = false
                             })
                             .padding(.horizontal)
+                            .background(HeightReaderView(height: $sheetContentHeight))
                             
                         case .negative:
-                            
                             NegativeFlowView(
                                 strings: Appero.instance.feedbackUIStrings,
                                 onCancel: {
@@ -104,21 +106,49 @@ public struct ApperoFeedbackView: View {
                                 }
                             )
                             .padding(.horizontal)
+                            .background(HeightReaderView(height: $sheetContentHeight))
                     }
                 }
             }
         }
         .background(usesSystemMaterial ? .clear : Appero.instance.theme.backgroundColor)
-        .presentationDetents([thanksDetent, feedbackDetent, ratingDetent], selection: $selectedPanelHeight)
+        .presentationDetents([.height(sheetContentHeight)], selection: $selectedPanelHeight)
         .presentationDragIndicator(.hidden)
         .animation(.easeOut(duration: 0.2), value: selectedPanelHeight)
+    }
+}
+
+@available(iOS 16.4, *)
+struct AutoHeightSheetModifier: ViewModifier {
+    @Binding var height: CGFloat
+    @State var detents: Set<PresentationDetent> = [.medium]
+    @State private var selectedDetent: PresentationDetent = .medium
+    
+    func body(content: Content) -> some View {
+        content
+            .presentationDetents(detents, selection: $selectedDetent)
+            .onChange(of: height) { _ in
+                // need both old and new height detent to animate
+                if !detents.contains(.height(height)) {
+                    detents.insert(.height(height))
+                }
+                // delay to next drawing cycle after detents updated
+                // so that detents and selected don't update together.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    selectedDetent = .height(height)
+                }
+                // Only keep the last height to stop drag & resize.
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    detents = [.height(height)]
+                }
+            }
     }
 }
 
 @available(iOS 16, *)
 private struct FeedbackView: View {
     
-    let kFeedbackLimit = 120
+    let kFeedbackLimit = 240
     
     let strings: Appero.FeedbackUIStrings
     let onRatingChosen: (_ rating: Int)->(Void)
@@ -206,6 +236,7 @@ private struct FeedbackView: View {
                         }
                     }
                     .buttonStyle(ApperoButtonStyle())
+                    .padding(EdgeInsets(top: 0, leading: 0, bottom: 20, trailing: 0))
                 }
                 .animation(.bouncy, value: showFeedbackForm) // Fixed deprecated animation
             }
@@ -332,6 +363,8 @@ private struct RatingView: View {
     @State var selectedRating: Int = 0
     var onRatingSelected: ((_ rating: Int)->(Void))?
     
+    let localizableStrings: [String.LocalizationValue] = ["RatingVeryNegative", "RatingNegative", "RatingNeutral", "RatingPositive", "RatingVeryPositive"]
+    
     var body: some View {
         HStack {
             ForEach((1...5), id: \.self) { index in
@@ -342,6 +375,7 @@ private struct RatingView: View {
                         .opacity(selectedRating == 0 || selectedRating == index ? 1.0 : 0.3)
                 })
                 .buttonStyle(RatingButtonStyle())
+                .accessibilityLabel(String(localized: localizableStrings[index - 1], bundle: .appero))
             }
         }
     }
@@ -444,6 +478,7 @@ private struct ThanksView: View {
                     }
                 }
                 .buttonStyle(ApperoTextButtonStyle())
+                .padding(EdgeInsets(top: 0, leading: 0, bottom: 20, trailing: 0))
             } else {
                 Button {
                     onDismiss()
@@ -455,6 +490,7 @@ private struct ThanksView: View {
                     }
                 }
                 .buttonStyle(ApperoButtonStyle())
+                .padding(EdgeInsets(top: 0, leading: 0, bottom: 20, trailing: 0))
             }
         }
         .frame(maxWidth: .infinity)
@@ -470,5 +506,28 @@ private struct ThanksView: View {
         ApperoFeedbackView(flowType: .negative)
             .environment(\.locale, .init(identifier: "en"))
     }
+}
+
+private struct HeightReaderView: View {
+    @Binding var height: CGFloat
     
+    var body: some View {
+        GeometryReader { geometry in
+            Color.clear
+                .preference(key: HeightPreferenceKey.self, value: geometry.size.height)
+        }
+        .onPreferenceChange(HeightPreferenceKey.self) { newHeight in
+            if newHeight > 0 {
+                height = newHeight
+            }
+        }
+    }
+}
+
+private struct HeightPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
 }
