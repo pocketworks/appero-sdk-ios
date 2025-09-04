@@ -5,6 +5,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 /// Provides the Appero feedback UI within a view to be displayed inside a modal sheet
 @available(iOS 16.4, *)
@@ -70,7 +71,6 @@ public struct ApperoFeedbackView: View {
                         presentationMode.wrappedValue.dismiss()
                     }
                     .padding(.horizontal)
-                    .background(HeightReaderView(height: $sheetContentHeight))
                 } else {
                     
                     switch flowType {
@@ -91,7 +91,6 @@ public struct ApperoFeedbackView: View {
                                 Appero.instance.shouldShowFeedbackPrompt = false
                             })
                             .padding(.horizontal)
-                            .background(HeightReaderView(height: $sheetContentHeight))
                             
                         case .negative:
                             NegativeFlowView(
@@ -106,11 +105,11 @@ public struct ApperoFeedbackView: View {
                                 }
                             )
                             .padding(.horizontal)
-                            .background(HeightReaderView(height: $sheetContentHeight))
                     }
                 }
             }
         }
+        .background(HeightReaderView(height: $sheetContentHeight))
         .background(usesSystemMaterial ? .clear : Appero.instance.theme.backgroundColor)
         .presentationDetents([.height(sheetContentHeight)], selection: $selectedPanelHeight)
         .presentationDragIndicator(.hidden)
@@ -205,7 +204,7 @@ private struct FeedbackView: View {
                             .foregroundColor(Appero.instance.theme.textFieldBackgroundColor)
                         TextField(text: $feedbackText, prompt: Text(strings.prompt).foregroundColor(Appero.instance.theme.primaryTextColor.opacity(0.5)),
                                   axis: .vertical, label: {})
-                        .lineLimit(1...5)
+                        .lineLimit(2...5)
                         .foregroundColor(Appero.instance.theme.primaryTextColor)
                         .font(Appero.instance.theme.bodyFont)
                         .padding(.all)
@@ -503,7 +502,7 @@ private struct ThanksView: View {
     Color(.red)
     .frame(width: .infinity, height: .infinity)
     .sheet(isPresented: $showPanel) {
-        ApperoFeedbackView(flowType: .negative)
+        ApperoFeedbackView(flowType: .positive)
             .environment(\.locale, .init(identifier: "en"))
     }
 }
