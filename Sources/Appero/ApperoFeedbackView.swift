@@ -28,7 +28,7 @@ public struct ApperoFeedbackView: View {
     @State private var showThanks: Bool = false
     @State private var sheetContentHeight = CGFloat(0)
     
-    private let ratingDetent = PresentationDetent.fraction(0.33)
+    private let ratingDetent = PresentationDetent.fraction(0.2)
     private let feedbackDetent = PresentationDetent.fraction(0.7)
     private let thanksDetent = PresentationDetent.fraction(0.25)
     
@@ -114,33 +114,6 @@ public struct ApperoFeedbackView: View {
         .presentationDetents([.height(sheetContentHeight)], selection: $selectedPanelHeight)
         .presentationDragIndicator(.hidden)
         .animation(.easeOut(duration: 0.2), value: selectedPanelHeight)
-    }
-}
-
-@available(iOS 16.4, *)
-struct AutoHeightSheetModifier: ViewModifier {
-    @Binding var height: CGFloat
-    @State var detents: Set<PresentationDetent> = [.medium]
-    @State private var selectedDetent: PresentationDetent = .medium
-    
-    func body(content: Content) -> some View {
-        content
-            .presentationDetents(detents, selection: $selectedDetent)
-            .onChange(of: height) { _ in
-                // need both old and new height detent to animate
-                if !detents.contains(.height(height)) {
-                    detents.insert(.height(height))
-                }
-                // delay to next drawing cycle after detents updated
-                // so that detents and selected don't update together.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                    selectedDetent = .height(height)
-                }
-                // Only keep the last height to stop drag & resize.
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    detents = [.height(height)]
-                }
-            }
     }
 }
 
@@ -516,9 +489,8 @@ private struct HeightReaderView: View {
                 .preference(key: HeightPreferenceKey.self, value: geometry.size.height)
         }
         .onPreferenceChange(HeightPreferenceKey.self) { newHeight in
-            if newHeight > 0 {
-                height = newHeight
-            }
+            // Always update to the current height, not just the max height
+            height = newHeight
         }
     }
 }
@@ -527,6 +499,7 @@ private struct HeightPreferenceKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value = max(value, nextValue())
+        // Use the latest value instead of the maximum
+        value = nextValue()
     }
 }
