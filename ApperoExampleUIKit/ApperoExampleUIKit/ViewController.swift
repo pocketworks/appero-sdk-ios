@@ -32,22 +32,59 @@ class ViewController: UIViewController {
         }
     }
 
-    @IBAction func positiveVibes(sender: Any?) {
-        Appero.instance.log(experience: .strongPositive)
-        if Appero.instance.shouldShowAppero {
+    @IBAction func veryPositive(sender: Any?) {
+        Appero.instance.log(experience: .strongPositive, context: "Very positive tapped")
+        if Appero.instance.shouldShowFeedbackPrompt {
             openAppero()
         }
     }
     
+    @IBAction func positive(sender: Any?) {
+        Appero.instance.log(experience: .strongPositive, context: "Positive tapped")
+        if Appero.instance.shouldShowFeedbackPrompt {
+            openAppero()
+        }
+    }
+    
+    @IBAction func neutral(sender: Any?) {
+        Appero.instance.log(experience: .strongPositive, context: "Neutral tapped")
+        if Appero.instance.shouldShowFeedbackPrompt {
+            openAppero()
+        }
+    }
+    
+    @IBAction func negative(sender: Any?) {
+        Appero.instance.log(experience: .strongPositive, context: "Negative tapped")
+        if Appero.instance.shouldShowFeedbackPrompt {
+            openAppero()
+        }
+    }
+    
+    @IBAction func veryNegative(sender: Any?) {
+        Appero.instance.log(experience: .strongPositive, context: "Very negative tapped")
+        if Appero.instance.shouldShowFeedbackPrompt {
+            openAppero()
+        }
+    }
+    
+    @IBAction func triggerFeedbackPrompt(sender: Any?) {
+        openAppero()
+    }
+    
     func openAppero() {
-        let apperoRatingView = ApperoPresentationView(productName: "ApperoExampleUIKit") {
+        let apperoView = ApperoPresentationView() { [weak self] in
+            
+            guard let self = self else {
+                return
+            }
+            
             // remove the child view controller when the panel is dismissed
             self.hostingController?.willMove(toParent: nil)
             self.hostingController?.view.removeFromSuperview()
             self.hostingController?.removeFromParent()
         }
         
-        hostingController = UIHostingController(rootView: apperoRatingView)
+        hostingController = UIHostingController(rootView: apperoView)
         hostingController?.view.translatesAutoresizingMaskIntoConstraints = false
         
         if let hostingController = hostingController {

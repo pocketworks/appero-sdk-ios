@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pocketworks/appero-sdk-ios",
       "state" : {
-        "branch" : "feature/custom-assets-fonts",
-        "revision" : "34ab133eab671dbf7c6b04aa08c11964fbd4848c"
+        "revision" : "c69b73ddddceded31d1514c903f0441f760ae8e4",
+        "version" : "1.0.1"
       }
     }
   ],

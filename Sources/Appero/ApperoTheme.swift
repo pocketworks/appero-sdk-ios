@@ -1,6 +1,6 @@
-//  ApperoTheme.swift
-//  ApperoExampleSwiftUI
 //
+//  ApperoTheme.swift
+//  Copyright Pocketworks Mobile Ltd.
 //  Created by Rory Prior on 28/05/2024.
 //
 
@@ -18,6 +18,8 @@ public protocol ApperoTheme {
     var bodyFont: Font { get }
     var buttonFont: Font { get }
     var captionFont: Font { get }
+    /// Use native material effects for the Appero UI background, defaults to false (solid colour background)
+    var usesSystemMaterial: Bool { get }
     func imageFor(rating: ApperoRating) -> Image
 }
 
@@ -70,6 +72,10 @@ public struct DefaultTheme: ApperoTheme {
         return Font.system(.body, design: .default)
     }
     
+    public var usesSystemMaterial: Bool {
+        return true
+    }
+    
     public var buttonFont: Font {
         if #available(iOS 16.0, *) {
             return Font.system(.body, design: .default, weight: .bold)
@@ -85,15 +91,15 @@ public struct DefaultTheme: ApperoTheme {
     public func imageFor(rating: ApperoRating) -> Image {
         switch rating {
             case .veryPoor:
-                return Image("rating1", bundle: Bundle.appero)
+                return Image("rating1", bundle: .appero)
             case .poor:
-                return Image("rating2", bundle: Bundle.appero)
+                return Image("rating2", bundle: .appero)
             case .average:
-                return Image("rating3", bundle: Bundle.appero)
+                return Image("rating3", bundle: .appero)
             case .good:
-                return Image("rating4", bundle: Bundle.appero)
+                return Image("rating4", bundle: .appero)
             case .veryGood:
-                return Image("rating5", bundle: Bundle.appero)
+                return Image("rating5", bundle: .appero)
         }
     }
 }
@@ -147,18 +153,22 @@ public struct LightTheme: ApperoTheme {
         return Font.custom("Helvetica", size: 14, relativeTo: .caption)
     }
     
+    public var usesSystemMaterial: Bool {
+        return false
+    }
+    
     public func imageFor(rating: ApperoRating) -> Image {
         switch rating {
             case .veryPoor:
-                return Image("rating1", bundle: Bundle.appero)
+                return Image("rating1", bundle: .appero)
             case .poor:
-                return Image("rating2", bundle: Bundle.appero)
+                return Image("rating2", bundle: .appero)
             case .average:
-                return Image("rating3", bundle: Bundle.appero)
+                return Image("rating3", bundle: .appero)
             case .good:
-                return Image("rating4", bundle: Bundle.appero)
+                return Image("rating4", bundle: .appero)
             case .veryGood:
-                return Image("rating5", bundle: Bundle.appero)
+                return Image("rating5", bundle: .appero)
         }
     }
 }
@@ -215,16 +225,20 @@ public struct DarkTheme: ApperoTheme {
     public func imageFor(rating: ApperoRating) -> Image {
         switch rating {
             case .veryPoor:
-                return Image("rating1-alt", bundle: Bundle.appero)
+                return Image("rating1-alt", bundle: .appero)
             case .poor:
-                return Image("rating2-alt", bundle: Bundle.appero)
+                return Image("rating2-alt", bundle: .appero)
             case .average:
-                return Image("rating3-alt", bundle: Bundle.appero)
+                return Image("rating3-alt", bundle: .appero)
             case .good:
-                return Image("rating4-alt", bundle: Bundle.appero)
+                return Image("rating4-alt", bundle: .appero)
             case .veryGood:
-                return Image("rating5-alt", bundle: Bundle.appero)
+                return Image("rating5-alt", bundle: .appero)
         }
+    }
+    
+    public var usesSystemMaterial: Bool {
+        return false
     }
 }
 

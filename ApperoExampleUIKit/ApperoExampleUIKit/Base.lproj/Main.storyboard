@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="32700.99.1234" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="22684"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -16,19 +16,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qfi-xE-bSi">
-                                <rect key="frame" x="83.666666666666686" y="440.33333333333331" width="226" height="35"/>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="Tap here for Positive Vibes"/>
-                                <connections>
-                                    <action selector="positiveVibesWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="bko-Bx-wWf"/>
-                                </connections>
-                            </button>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="star.fill" catalog="system" translatesAutoresizingMaskIntoConstraints="NO" id="bS8-bW-QuA">
-                                <rect key="frame" x="185.66666666666666" y="415.66666666666669" width="22" height="20"/>
-                            </imageView>
                             <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" translatesAutoresizingMaskIntoConstraints="NO" id="jb3-KX-FXA">
-                                <rect key="frame" x="98" y="354" width="197" height="32"/>
+                                <rect key="frame" x="98" y="313.33333333333331" width="197" height="32"/>
                                 <segments>
                                     <segment title="System"/>
                                     <segment title="Light"/>
@@ -39,22 +28,95 @@
                                 </connections>
                             </segmentedControl>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Appero theme:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="e2D-W4-JNf">
-                                <rect key="frame" x="140" y="325" width="113" height="21"/>
+                                <rect key="frame" x="140" y="285" width="113" height="20.333333333333314"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="11" translatesAutoresizingMaskIntoConstraints="NO" id="2LD-pq-xo8">
+                                <rect key="frame" x="116.66666666666669" y="368.33333333333331" width="160" height="215.66666666666669"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="vTf-uF-hdk">
+                                        <rect key="frame" x="0.0" y="0.0" width="160" height="34.333333333333336"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="tinted" image="hand.thumbsup.fill" catalog="system" title="Very postitive">
+                                            <backgroundConfiguration key="background">
+                                                <color key="backgroundColor" red="0.20392156859999999" green="0.78039215689999997" blue="0.34901960780000002" alpha="0.30210057947019869" colorSpace="custom" customColorSpace="sRGB"/>
+                                            </backgroundConfiguration>
+                                            <color key="baseBackgroundColor" systemColor="systemGreenColor"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="veryPositiveWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="2Bd-B3-7HD"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Cvl-CI-wG3">
+                                        <rect key="frame" x="0.0" y="45.333333333333371" width="160" height="34.333333333333343"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="tinted" image="hand.thumbsup" catalog="system" title="Positive">
+                                            <color key="baseBackgroundColor" systemColor="systemGreenColor"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="positiveWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="bih-Wb-WbX"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="V7Y-xT-Mca">
+                                        <rect key="frame" x="0.0" y="90.666666666666686" width="160" height="34.333333333333343"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="tinted" image="circle.dotted" catalog="system" title="Neutral">
+                                            <color key="baseBackgroundColor" systemColor="systemYellowColor"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="neutralWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="XWi-Ea-RAx"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="q6p-KG-iBW">
+                                        <rect key="frame" x="0.0" y="136" width="160" height="34.333333333333343"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="tinted" image="hand.thumbsdown" catalog="system" title="Negative">
+                                            <backgroundConfiguration key="background"/>
+                                            <color key="baseBackgroundColor" systemColor="systemRedColor"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="negativeWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="QVP-7c-2gA"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ByC-bo-rCp">
+                                        <rect key="frame" x="0.0" y="181.33333333333331" width="160" height="34.333333333333343"/>
+                                        <state key="normal" title="Button"/>
+                                        <buttonConfiguration key="configuration" style="tinted" image="hand.thumbsdown.fill" catalog="system" title="Very Negative">
+                                            <backgroundConfiguration key="background">
+                                                <color key="backgroundColor" red="1" green="0.23137254900000001" blue="0.18823529410000001" alpha="0.30367860099337746" colorSpace="custom" customColorSpace="sRGB"/>
+                                            </backgroundConfiguration>
+                                            <color key="baseBackgroundColor" systemColor="systemRedColor"/>
+                                        </buttonConfiguration>
+                                        <connections>
+                                            <action selector="veryNegativeWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="5h5-BA-HZ7"/>
+                                        </connections>
+                                    </button>
+                                </subviews>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="160" id="cyQ-KR-EdZ"/>
+                                </constraints>
+                            </stackView>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="51d-0Y-9yB">
+                                <rect key="frame" x="82.000000000000014" y="749.66666666666663" width="229.33333333333337" height="34.333333333333371"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="tinted" title="Manually Trigger Feedback"/>
+                                <connections>
+                                    <action selector="triggerFeedbackPromptWithSender:" destination="BYZ-38-t0r" eventType="touchUpInside" id="hnH-TL-OdQ"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="bS8-bW-QuA" firstAttribute="top" secondItem="jb3-KX-FXA" secondAttribute="bottom" constant="31" id="HPd-Cq-fIK"/>
-                            <constraint firstItem="bS8-bW-QuA" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Haf-rd-pOv"/>
+                            <constraint firstItem="2LD-pq-xo8" firstAttribute="top" secondItem="jb3-KX-FXA" secondAttribute="bottom" constant="24" id="4hD-cR-VIL"/>
+                            <constraint firstItem="51d-0Y-9yB" firstAttribute="bottom" secondItem="6Tk-OE-BBY" secondAttribute="bottom" id="9Ap-fM-t4m"/>
+                            <constraint firstItem="2LD-pq-xo8" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" constant="50" id="I0e-o0-aP2"/>
                             <constraint firstItem="e2D-W4-JNf" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="K6p-gy-hQQ"/>
-                            <constraint firstItem="qfi-xE-bSi" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="S2R-Iv-AfK"/>
-                            <constraint firstItem="qfi-xE-bSi" firstAttribute="top" secondItem="bS8-bW-QuA" secondAttribute="bottom" constant="4" id="aAG-IN-FA2"/>
-                            <constraint firstItem="bS8-bW-QuA" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" id="gr5-Z2-qVZ"/>
+                            <constraint firstItem="51d-0Y-9yB" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="kKn-oZ-10v"/>
                             <constraint firstItem="jb3-KX-FXA" firstAttribute="top" secondItem="e2D-W4-JNf" secondAttribute="bottom" constant="8" symbolic="YES" id="oVt-tS-t63"/>
+                            <constraint firstItem="2LD-pq-xo8" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="vIU-y6-8K9"/>
                             <constraint firstItem="jb3-KX-FXA" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="zp6-yZ-EUS"/>
                         </constraints>
                     </view>
@@ -68,9 +130,22 @@
         </scene>
     </scenes>
     <resources>
-        <image name="star.fill" catalog="system" width="128" height="116"/>
+        <image name="circle.dotted" catalog="system" width="128" height="123"/>
+        <image name="hand.thumbsdown" catalog="system" width="123" height="128"/>
+        <image name="hand.thumbsdown.fill" catalog="system" width="128" height="121"/>
+        <image name="hand.thumbsup" catalog="system" width="123" height="128"/>
+        <image name="hand.thumbsup.fill" catalog="system" width="128" height="121"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+        </systemColor>
+        <systemColor name="systemGreenColor">
+            <color red="0.20392156862745098" green="0.7803921568627451" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemRedColor">
+            <color red="1" green="0.23137254901960785" blue="0.18823529411764706" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        </systemColor>
+        <systemColor name="systemYellowColor">
+            <color red="1" green="0.80000000000000004" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>
