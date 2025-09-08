@@ -30,7 +30,7 @@ public struct ApperoFeedbackView: View {
     
     private let ratingDetent = PresentationDetent.fraction(0.2)
     private let feedbackDetent = PresentationDetent.fraction(0.7)
-    private let thanksDetent = PresentationDetent.fraction(0.25)
+    private let thanksDetent = PresentationDetent.fraction(0.3)
     
     public init(flowType: Appero.FlowType? = nil) {
         if let flowType = flowType {
@@ -87,7 +87,7 @@ public struct ApperoFeedbackView: View {
                                 Appero.instance.analyticsDelegate?.logApperoFeedback(rating: rating, feedback: feedback)
                                 self.rating = rating
                                 self.showThanks = true
-                                selectedPanelHeight = rating > 3 ? ratingDetent : thanksDetent
+                                selectedPanelHeight = rating > 3 ? thanksDetent : ratingDetent
                                 Appero.instance.shouldShowFeedbackPrompt = false
                             })
                             .padding(.horizontal)
@@ -109,9 +109,8 @@ public struct ApperoFeedbackView: View {
                 }
             }
         }
-        .background(HeightReaderView(height: $sheetContentHeight))
         .background(usesSystemMaterial ? .clear : Appero.instance.theme.backgroundColor)
-        .presentationDetents([.height(sheetContentHeight)], selection: $selectedPanelHeight)
+        .presentationDetents([thanksDetent, feedbackDetent, ratingDetent], selection: $selectedPanelHeight)
         .presentationDragIndicator(.hidden)
         .animation(.easeOut(duration: 0.2), value: selectedPanelHeight)
     }
@@ -477,29 +476,5 @@ private struct ThanksView: View {
     .sheet(isPresented: $showPanel) {
         ApperoFeedbackView(flowType: .positive)
             .environment(\.locale, .init(identifier: "en"))
-    }
-}
-
-private struct HeightReaderView: View {
-    @Binding var height: CGFloat
-    
-    var body: some View {
-        GeometryReader { geometry in
-            Color.clear
-                .preference(key: HeightPreferenceKey.self, value: geometry.size.height)
-        }
-        .onPreferenceChange(HeightPreferenceKey.self) { newHeight in
-            // Always update to the current height, not just the max height
-            height = newHeight
-        }
-    }
-}
-
-private struct HeightPreferenceKey: PreferenceKey {
-    static var defaultValue: CGFloat = 0
-    
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        // Use the latest value instead of the maximum
-        value = nextValue()
     }
 }
