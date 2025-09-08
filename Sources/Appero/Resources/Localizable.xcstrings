@@ -95,6 +95,42 @@
         }
       }
     },
+    "RatingNegative" : {
+      "comment" : "Accessibility label for negative button",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Negative"
+          }
+        }
+      }
+    },
+    "RatingNeutral" : {
+      "comment" : "Accessibility label for neutral button",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neutral"
+          }
+        }
+      }
+    },
+    "RatingPositive" : {
+      "comment" : "Accessibility label for positive button",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Positive"
+          }
+        }
+      }
+    },
     "RatingPromptNegative" : {
       "comment" : "Prompt triggered by rating selection in the panel",
       "extractionState" : "manual",
@@ -127,6 +163,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "What made your experience positive?"
+          }
+        }
+      }
+    },
+    "RatingVeryNegative" : {
+      "comment" : "Accessibility label for very negative button",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Very negative"
+          }
+        }
+      }
+    },
+    "RatingVeryPositive" : {
+      "comment" : "Accessibility label for very positive button",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Very positive"
           }
         }
       }

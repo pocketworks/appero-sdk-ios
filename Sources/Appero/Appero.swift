@@ -105,7 +105,7 @@ public class Appero {
     private var apiKey: String?
     
     /// an optional string to identify your user (uuid from your backend, account number, email address etc.)
-    var clientId: String?
+    var userId: String?
     
     /// set to true to enable debug logging to the console
     public var isDebug = false
@@ -133,14 +133,14 @@ public class Appero {
     /// Initialise the Appero SDK. This should be called early on in your app's lifecycle.
     /// - Parameters:
     ///   - apiKey: your API key
-    ///   - clientId: optional user identifier, if none provided one will be generated automatically
-    public func start(apiKey: String, clientId: String?) {
+    ///   - userId: optional user identifier, if none provided a UUID will be generated automatically
+    public func start(apiKey: String, userId: String?) {
         self.apiKey = apiKey
-        self.clientId = clientId ?? generateOrRestoreClientId()
+        self.userId = userId ?? generateOrRestoreUserId()
     }
     
     /// Generates a unique user ID that is cached in user defaults and subsequently returned on future calls.
-    public func generateOrRestoreClientId() -> String {
+    public func generateOrRestoreUserId() -> String {
         if let existingId = UserDefaults.standard.string(forKey: Constants.kUserIdKey) {
             return existingId
         } else {
@@ -214,7 +214,6 @@ public class Appero {
             let data = try encoder.encode(apperoData)
             let fileURL = getApperoDataFileURL()
             try data.write(to: fileURL)
-            ApperoDebug.log("Saved ApperoData to file successfully")
         } catch {
             ApperoDebug.log("Error saving ApperoData to file: \(error)")
         }
@@ -226,7 +225,6 @@ public class Appero {
         
         // Check if file exists
         guard FileManager.default.fileExists(atPath: fileURL.path) else {
-            ApperoDebug.log("ApperoData file does not exist")
             return nil
         }
         
@@ -235,7 +233,6 @@ public class Appero {
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .iso8601
             let apperoData = try decoder.decode(ApperoData.self, from: data)
-            ApperoDebug.log("Loaded ApperoData from file successfully")
             return apperoData
         } catch {
             ApperoDebug.log("Error loading ApperoData from file: \(error)")
@@ -327,14 +324,14 @@ public class Appero {
         var successfullyProcessed: [Appero.Experience] = []
         
         for (index, experience) in currentData.unsentExperiences.enumerated() {
-            guard let apiKey = apiKey, let clientId = clientId else {
+            guard let apiKey = apiKey, let clientId = userId else {
                 ApperoDebug.log("Cannot process experience - API key or client ID not set")
                 continue
             }
             
             do {
                 let experienceData: [String: Any] = await [
-                    "client_id": clientId,
+                    "user_id": clientId,
                     "date": experience.date.ISO8601Format(),
                     "value": experience.value.rawValue,
                     "context": experience.context ?? "",
@@ -348,6 +345,8 @@ public class Appero {
                     method: .post,
                     authorization: apiKey
                 )
+                
+                ApperoDebug.log("Experience posted successfully")
                 
                 successfullyProcessed.append(experience)
                 handleExperienceResponse(response: try JSONDecoder().decode(ExperienceResponse.self, from: data))
@@ -402,6 +401,7 @@ public class Appero {
                 try await ApperoAPIClient.sendRequest(
                     endPoint: "feedback",
                     fields: [
+                        "user_id": userId,
                         "sent_at": feedback.date.ISO8601Format(),
                         "feedback": feedback.feedback ?? "",
                         "source" : UIDevice.current.systemName,
@@ -409,8 +409,9 @@ public class Appero {
                         "rating": String(feedback.rating)
                     ],
                     method: .post,
-                    authorization: apiKey
+                    authorization: apiKey                    
                 )
+                ApperoDebug.log("Feedback posted successfully")
                 
                 successfullyProcessed.append(feedback)
                 ApperoDebug.log("Successfully sent queued feedback \(index + 1)/\(currentData.unsentFeedback.count)")
@@ -431,7 +432,7 @@ public class Appero {
     /// Sends an experience to the backend, queuing it if the request fails
     /// - Parameter experience: The experience to send
     private func postExperience(_ experience: Experience) async {
-        guard let apiKey = apiKey, let clientId = clientId else {
+        guard let apiKey = apiKey, let clientId = userId else {
             ApperoDebug.log("Cannot send experience - API key or client ID not set")
             queueExperience(experience)
             return
@@ -486,7 +487,7 @@ public class Appero {
     /// Sends feedback to the backend, queuing it if the request fails
     /// - Parameter feedback: The feedback to send
     private func postFeedback(_ feedback: QueuedFeedback) async {
-        guard let apiKey = apiKey, let clientId = clientId else {
+        guard let apiKey = apiKey, let clientId = userId else {
             ApperoDebug.log("Cannot send feedback - API key or client ID not set")
             queueFeedback(feedback)
             return
@@ -637,7 +638,7 @@ public class Appero {
         }
         
         // Clear instance variables
-        self.clientId = nil
+        self.userId = nil
     }
     
     /// Convenience function for requesting an app store rating. We recommend letting Appero handle when this is called to maximise your chances of a positive rating.

@@ -10,7 +10,7 @@ final class ApperoTests: XCTestCase {
         appero = Appero.instance
         // Clear any existing data
         appero.reset()
-        appero.start(apiKey: "test_api_key", clientId: "test_client_id")
+        appero.start(apiKey: "test_api_key", userId: "test_client_id")
     }
     
     override func tearDown() {
@@ -23,18 +23,18 @@ final class ApperoTests: XCTestCase {
     func testClientIdGeneration() {
         // Test that a client ID is generated when none is provided
         appero.reset()
-        appero.start(apiKey: "test_api_key", clientId: nil)
+        appero.start(apiKey: "test_api_key", userId: nil)
         
-        XCTAssertNotNil(appero.clientId)
-        XCTAssertFalse(appero.clientId!.isEmpty)
+        XCTAssertNotNil(appero.userId)
+        XCTAssertFalse(appero.userId!.isEmpty)
         
         // Test that the same ID is returned on subsequent calls
-        let firstId = appero.generateOrRestoreClientId()
-        let secondId = appero.generateOrRestoreClientId()
+        let firstId = appero.generateOrRestoreUserId()
+        let secondId = appero.generateOrRestoreUserId()
         XCTAssertEqual(firstId, secondId)
         
         // Test that the generated ID persists
-        XCTAssertEqual(appero.clientId, firstId)
+        XCTAssertEqual(appero.userId, firstId)
     }
     
     // MARK: - Data Persistence Tests
@@ -147,26 +147,26 @@ final class ApperoTests: XCTestCase {
     func testReset() {
         // Set up some data first
         appero.shouldShowFeedbackPrompt = true
-        let clientId = appero.generateOrRestoreClientId()
+        let clientId = appero.generateOrRestoreUserId()
         
         // Verify data exists
         XCTAssertTrue(appero.shouldShowFeedbackPrompt)
-        XCTAssertNotNil(appero.clientId)
+        XCTAssertNotNil(appero.userId)
         XCTAssertNotNil(UserDefaults.standard.string(forKey: Appero.Constants.kUserIdKey))
         
         // Reset
         appero.reset()
         
         // Verify data is cleared
-        XCTAssertNil(appero.clientId)
+        XCTAssertNil(appero.userId)
         XCTAssertNil(UserDefaults.standard.string(forKey: Appero.Constants.kUserIdKey))
         
         // Verify ApperoData file is deleted (check that default values are returned)
         XCTAssertFalse(appero.shouldShowFeedbackPrompt) // Should be false by default
         
         // Verify that we need to reinitialize after reset
-        appero.start(apiKey: "test_api_key", clientId: "test_client_id")
-        XCTAssertEqual(appero.clientId, "test_client_id")
+        appero.start(apiKey: "test_api_key", userId: "test_client_id")
+        XCTAssertEqual(appero.userId, "test_client_id")
     }
     
     // MARK: - Mock Network Tests

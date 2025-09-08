@@ -5,9 +5,10 @@
 //
 
 import SwiftUI
+import UIKit
 
 /// Provides the Appero feedback UI within a view to be displayed inside a modal sheet
-@available(iOS 16, *)
+@available(iOS 16.4, *)
 public struct ApperoFeedbackView: View {
     
     enum ApperoPanel {
@@ -19,23 +20,37 @@ public struct ApperoFeedbackView: View {
     @Environment(\.presentationMode) var presentationMode
     
     let strings: Appero.FeedbackUIStrings
+    let usesSystemMaterial = Appero.instance.theme.usesSystemMaterial
     
     @State private var selectedPanelHeight = PresentationDetent.fraction(0.33)
     @State private var flowType: Appero.FlowType
     @State private var rating: Int = 0
     @State private var showThanks: Bool = false
+    @State private var sheetContentHeight = CGFloat(0)
     
-    private let ratingDetent = PresentationDetent.fraction(0.33)
-    private let feedbackDetent = PresentationDetent.fraction(0.7)
-    private let thanksDetent = PresentationDetent.fraction(0.25)
+    private let ratingDetent = PresentationDetent.height(UIFontMetrics.default.scaledValue(for: 200))
+    private let feedbackDetent = PresentationDetent.fraction(UIFontMetrics.default.scaledValue(for: 0.7))
+    private let thanksDetent = PresentationDetent.height(UIFontMetrics.default.scaledValue(for: 250))
     
-    
-    public init() {
-        self.flowType = Appero.instance.flowType
+    public init(flowType: Appero.FlowType? = nil) {
+        if let flowType = flowType {
+            self.flowType = flowType
+        } else {
+            self.flowType = Appero.instance.flowType
+        }
         self.strings = Appero.instance.feedbackUIStrings
     }
     
     public var body: some View {
+        if usesSystemMaterial {
+            feedbackBody
+                .presentationBackground(.regularMaterial)
+        } else {
+            feedbackBody
+        }
+    }
+    
+    public var feedbackBody: some View {
         HStack(alignment: .top) {
             VStack(alignment: .center) {
                 HStack(alignment: .top, content: {
@@ -49,6 +64,7 @@ public struct ApperoFeedbackView: View {
                     .padding(.top)
                     .padding(.trailing)
                 })
+
                 
                 if showThanks {
                     ThanksView(rating: rating) {
@@ -71,25 +87,29 @@ public struct ApperoFeedbackView: View {
                                 Appero.instance.analyticsDelegate?.logApperoFeedback(rating: rating, feedback: feedback)
                                 self.rating = rating
                                 self.showThanks = true
-                                selectedPanelHeight = rating > 3 ? ratingDetent : thanksDetent
+                                selectedPanelHeight = rating > 3 ? thanksDetent : ratingDetent
                                 Appero.instance.shouldShowFeedbackPrompt = false
                             })
                             .padding(.horizontal)
                             
                         case .negative:
-                            
-                            NegativeFlowView(strings: Appero.instance.feedbackUIStrings) {
-                                //
-                            } onSubmit: { feedback in
-                                Appero.instance.analyticsDelegate?.logApperoFeedback(rating: 1, feedback: feedback)
-                                self.rating = 1
-                                self.showThanks = true
-                            }
+                            NegativeFlowView(
+                                strings: Appero.instance.feedbackUIStrings,
+                                onCancel: {
+                                    presentationMode.wrappedValue.dismiss()
+                                },
+                                onSubmit: { feedback in
+                                    Appero.instance.analyticsDelegate?.logApperoFeedback(rating: 1, feedback: feedback)
+                                    self.rating = 1
+                                    self.showThanks = true
+                                }
+                            )
+                            .padding(.horizontal)
                     }
                 }
             }
         }
-        .background(Appero.instance.theme.backgroundColor)
+        .background(usesSystemMaterial ? .clear : Appero.instance.theme.backgroundColor)
         .presentationDetents([thanksDetent, feedbackDetent, ratingDetent], selection: $selectedPanelHeight)
         .presentationDragIndicator(.hidden)
         .animation(.easeOut(duration: 0.2), value: selectedPanelHeight)
@@ -99,7 +119,7 @@ public struct ApperoFeedbackView: View {
 @available(iOS 16, *)
 private struct FeedbackView: View {
     
-    let kFeedbackLimit = 120
+    let kFeedbackLimit = 240
     
     let strings: Appero.FeedbackUIStrings
     let onRatingChosen: (_ rating: Int)->(Void)
@@ -156,7 +176,7 @@ private struct FeedbackView: View {
                             .foregroundColor(Appero.instance.theme.textFieldBackgroundColor)
                         TextField(text: $feedbackText, prompt: Text(strings.prompt).foregroundColor(Appero.instance.theme.primaryTextColor.opacity(0.5)),
                                   axis: .vertical, label: {})
-                        .lineLimit(1...5)
+                        .lineLimit(2...5)
                         .foregroundColor(Appero.instance.theme.primaryTextColor)
                         .font(Appero.instance.theme.bodyFont)
                         .padding(.all)
@@ -187,6 +207,7 @@ private struct FeedbackView: View {
                         }
                     }
                     .buttonStyle(ApperoButtonStyle())
+                    .padding(EdgeInsets(top: 0, leading: 0, bottom: 20, trailing: 0))
                 }
                 .animation(.bouncy, value: showFeedbackForm) // Fixed deprecated animation
             }
@@ -313,6 +334,8 @@ private struct RatingView: View {
     @State var selectedRating: Int = 0
     var onRatingSelected: ((_ rating: Int)->(Void))?
     
+    let localizableStrings: [String.LocalizationValue] = ["RatingVeryNegative", "RatingNegative", "RatingNeutral", "RatingPositive", "RatingVeryPositive"]
+    
     var body: some View {
         HStack {
             ForEach((1...5), id: \.self) { index in
@@ -323,6 +346,7 @@ private struct RatingView: View {
                         .opacity(selectedRating == 0 || selectedRating == index ? 1.0 : 0.3)
                 })
                 .buttonStyle(RatingButtonStyle())
+                .accessibilityLabel(String(localized: localizableStrings[index - 1], bundle: .appero))
             }
         }
     }
@@ -334,7 +358,7 @@ private struct RatingView: View {
 }
 
 /// Supports showing the Appero panel from UIKit in a hosting controller.
-@available(iOS 16, *)
+@available(iOS 16.4, *)
 public struct ApperoPresentationView: View {
     
     let onDismiss: (()->())?
@@ -425,6 +449,7 @@ private struct ThanksView: View {
                     }
                 }
                 .buttonStyle(ApperoTextButtonStyle())
+                .padding(EdgeInsets(top: 0, leading: 0, bottom: 20, trailing: 0))
             } else {
                 Button {
                     onDismiss()
@@ -436,14 +461,20 @@ private struct ThanksView: View {
                     }
                 }
                 .buttonStyle(ApperoButtonStyle())
+                .padding(EdgeInsets(top: 0, leading: 0, bottom: 20, trailing: 0))
             }
         }
         .frame(maxWidth: .infinity)
     }
 }
 
-@available(iOS 16, *)
+@available(iOS 17, *)
 #Preview {
-    ApperoFeedbackView()
-        .environment(\.locale, .init(identifier: "en"))
+    @Previewable @State var showPanel = true
+    Color(.red)
+    .frame(width: .infinity, height: .infinity)
+    .sheet(isPresented: $showPanel) {
+        ApperoFeedbackView(flowType: .positive)
+            .environment(\.locale, .init(identifier: "en"))
+    }
 }
