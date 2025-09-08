@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pocketworks/appero-sdk-ios",
       "state" : {
-        "branch" : "release/1.1.0",
-        "revision" : "ffa1f858ad06a6936eac52353d9e80765082496b"
+        "revision" : "c69b73ddddceded31d1514c903f0441f760ae8e4",
+        "version" : "1.0.1"
       }
     }
   ],
