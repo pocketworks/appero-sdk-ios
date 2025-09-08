@@ -30,7 +30,7 @@ public struct ApperoFeedbackView: View {
     
     private let ratingDetent = PresentationDetent.height(UIFontMetrics.default.scaledValue(for: 200))
     private let feedbackDetent = PresentationDetent.fraction(UIFontMetrics.default.scaledValue(for: 0.7))
-    private let thanksDetent = PresentationDetent.height(UIFontMetrics.default.scaledValue(for: 300))
+    private let thanksDetent = PresentationDetent.height(UIFontMetrics.default.scaledValue(for: 250))
     
     public init(flowType: Appero.FlowType? = nil) {
         if let flowType = flowType {
