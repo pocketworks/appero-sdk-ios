@@ -28,9 +28,9 @@ public struct ApperoFeedbackView: View {
     @State private var showThanks: Bool = false
     @State private var sheetContentHeight = CGFloat(0)
     
-    private let ratingDetent = PresentationDetent.fraction(0.2)
-    private let feedbackDetent = PresentationDetent.fraction(0.7)
-    private let thanksDetent = PresentationDetent.fraction(0.3)
+    private let ratingDetent = PresentationDetent.height(UIFontMetrics.default.scaledValue(for: 200))
+    private let feedbackDetent = PresentationDetent.fraction(UIFontMetrics.default.scaledValue(for: 0.7))
+    private let thanksDetent = PresentationDetent.height(UIFontMetrics.default.scaledValue(for: 300))
     
     public init(flowType: Appero.FlowType? = nil) {
         if let flowType = flowType {
