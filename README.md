@@ -6,6 +6,7 @@ The in-app feedback widget that drives organic growth.
 
 * iOS 15 or later for the basic library functions
 * iOS 16 or later to use the built-in feedback UI
+* This is primarily a Swift based SDK but some core functions are available in Objective-C to aid integration in mixed codebases
 
 ## Adding the Appero SDK to your project
 
@@ -23,6 +24,7 @@ Appero caches experiences and feedback that's been logged to a json file, so tha
 
 The Appero SDK for iOS is based around a shared instance model that can be accessed from anywhere in your code once initialised. We recommend initialising Appero in either your main view's init() method for a SwiftUI app or in applicationDidFinishLaunching in a storyboard/UIKit based app.
 
+Swift:
 ```
 Appero.instance.start(
     apiKey: "your_api_key",
@@ -30,25 +32,26 @@ Appero.instance.start(
 )
 ```
 
+Objective-C
+```
+    [[Appero instance] startWithApiKey: @"your_api_key" 
+                                userId: @"your_user_id"]
+```
+    
 You can then access the instance to access the SDK's functionality from anywhere in your app it makes sense.
-
-For example triggering the send feedback API can to be called as such:
-
-```
-Task {
-    await Appero.instance.postFeedback(
-        rating: 5,
-        feedback: "Posted from the SwiftUI Example App"
-    )
-}
-```
 
 ## Monitoring User Experience
 
 One of the core ideas in Appero is that we're tracking positive and negative user experiences. Once the number of experiences logged crosses the threshold defined on the Appero dashboard, we want to prompt the user to give us their feedback – be it positive or constructive. We call `log(experience: Experience, context: String)` to record individual experiences. The context string is used to categorise the experience and can be used to track outcomes of user flows, monitor for error states and so on.
 
+Swift:
 ```
 Appero.instance.log(experience: .strongPositive, context: "User started free trial")
+```
+
+Objective-C
+```
+[[Appero instance] logWithExperience: ExperienceRatingStrongPositive context: @"User started free trial"];
 ```
 
 Typical types of user experience you will want to add logging for are:
