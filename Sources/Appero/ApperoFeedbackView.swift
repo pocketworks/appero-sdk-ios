@@ -22,21 +22,33 @@ public struct ApperoFeedbackView: View {
     let strings: Appero.FeedbackUIStrings
     let usesSystemMaterial = Appero.instance.theme.usesSystemMaterial
     
-    @State private var selectedPanelHeight = PresentationDetent.fraction(UIFontMetrics.default.scaledValue(for: 0.7))
+    @State private var selectedPanelHeight: PresentationDetent
     @State private var flowType: Appero.FlowType
     @State private var rating: Int = 0
     @State private var showThanks: Bool = false
     @State private var sheetContentHeight = CGFloat(0)
     
     private let ratingDetent = PresentationDetent.height(UIFontMetrics.default.scaledValue(for: 200))
-    private let feedbackDetent = PresentationDetent.fraction(UIFontMetrics.default.scaledValue(for: 0.7))
+    private let feedbackDetent = PresentationDetent.fraction(UIFontMetrics.default.scaledValue(for: 0.5))
     private let thanksDetent = PresentationDetent.height(UIFontMetrics.default.scaledValue(for: 250))
     
     public init(flowType: Appero.FlowType? = nil) {
         if let flowType = flowType {
             self.flowType = flowType
+            switch flowType {
+                case .neutral, .positive:
+                    selectedPanelHeight = ratingDetent
+                default:
+                    selectedPanelHeight = feedbackDetent
+            }
         } else {
             self.flowType = Appero.instance.flowType
+            switch Appero.instance.flowType {
+                case .neutral, .positive:
+                    selectedPanelHeight = ratingDetent
+                default:
+                    selectedPanelHeight = feedbackDetent
+            }
         }
         self.strings = Appero.instance.feedbackUIStrings
     }
