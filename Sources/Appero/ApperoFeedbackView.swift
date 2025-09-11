@@ -22,7 +22,7 @@ public struct ApperoFeedbackView: View {
     let strings: Appero.FeedbackUIStrings
     let usesSystemMaterial = Appero.instance.theme.usesSystemMaterial
     
-    @State private var selectedPanelHeight = PresentationDetent.fraction(0.33)
+    @State private var selectedPanelHeight = PresentationDetent.fraction(UIFontMetrics.default.scaledValue(for: 0.7))
     @State private var flowType: Appero.FlowType
     @State private var rating: Int = 0
     @State private var showThanks: Bool = false
@@ -99,6 +99,12 @@ public struct ApperoFeedbackView: View {
                                     presentationMode.wrappedValue.dismiss()
                                 },
                                 onSubmit: { feedback in
+                                    Task {
+                                        await Appero.instance.postFeedback(
+                                            rating: 1,
+                                            feedback: feedback
+                                        )
+                                    }
                                     Appero.instance.analyticsDelegate?.logApperoFeedback(rating: 1, feedback: feedback)
                                     self.rating = 1
                                     self.showThanks = true
@@ -219,7 +225,7 @@ private struct FeedbackView: View {
 @available(iOS 16, *)
 private struct NegativeFlowView: View {
     
-    let kFeedbackLimit = 120
+    let kFeedbackLimit = 240
     
     let strings: Appero.FeedbackUIStrings
     let onCancel: ()->(Void)
@@ -474,7 +480,7 @@ private struct ThanksView: View {
     Color(.red)
     .frame(width: .infinity, height: .infinity)
     .sheet(isPresented: $showPanel) {
-        ApperoFeedbackView(flowType: .positive)
+        ApperoFeedbackView(flowType: .negative)
             .environment(\.locale, .init(identifier: "en"))
     }
 }

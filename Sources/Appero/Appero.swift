@@ -15,7 +15,7 @@ import StoreKit
 import Network
 import SwiftUI
 
-public class Appero {
+@objc public class Appero: NSObject {
     
     struct Constants {
         static let kUserIdKey = "appero_user_id"
@@ -29,7 +29,7 @@ public class Appero {
         static let retryTimerInterval: TimeInterval = 180.0 // 3 minutes
     }
     
-    public enum ExperienceRating: Int, Codable {
+    @objc public enum ExperienceRating: Int, Codable {
         case strongPositive = 5
         case positive = 4
         case neutral = 3
@@ -37,7 +37,7 @@ public class Appero {
         case strongNegative = 1
     }
     
-    public struct Experience: Codable, Equatable {
+    internal struct Experience: Codable, Equatable {
         let date: Date
         let value: ExperienceRating
         let context: String?
@@ -47,7 +47,7 @@ public class Appero {
         }
     }
     
-    public struct QueuedFeedback: Codable, Equatable {
+    internal struct QueuedFeedback: Codable, Equatable {
         let date: Date
         let rating: Int
         let feedback: String?
@@ -99,16 +99,16 @@ public class Appero {
     }
     
     // config constants
-    public static let instance = Appero()
+    @objc public static let instance = Appero()
 
     // instance vars
     private var apiKey: String?
     
     /// an optional string to identify your user (uuid from your backend, account number, email address etc.)
-    var userId: String?
+    @objc public var userId: String?
     
     /// set to true to enable debug logging to the console
-    public var isDebug = false
+    @objc public var isDebug = false
     
     /// Specifies a delegate to handle analytics
     public var analyticsDelegate: ApperoAnalyticsDelegate?
@@ -123,9 +123,10 @@ public class Appero {
     private var isConnected = true
     
     /// For testing purposes - when set to true, forces offline queuing behavior regardless of actual network status
-    public var forceOfflineMode = false
+    @objc public var forceOfflineMode = false
     
-    private init() {
+    private override init() {
+        super.init()
         setupNetworkMonitoring()
         startRetryTimer()
     }
@@ -134,13 +135,13 @@ public class Appero {
     /// - Parameters:
     ///   - apiKey: your API key
     ///   - userId: optional user identifier, if none provided a UUID will be generated automatically
-    public func start(apiKey: String, userId: String?) {
+    @objc public func start(apiKey: String, userId: String?) {
         self.apiKey = apiKey
         self.userId = userId ?? generateOrRestoreUserId()
     }
     
     /// Generates a unique user ID that is cached in user defaults and subsequently returned on future calls.
-    public func generateOrRestoreUserId() -> String {
+    @objc public func generateOrRestoreUserId() -> String {
         if let existingId = UserDefaults.standard.string(forKey: Constants.kUserIdKey) {
             return existingId
         } else {
@@ -150,7 +151,7 @@ public class Appero {
         }
     }
     
-    public var shouldShowFeedbackPrompt: Bool {
+    @objc public var shouldShowFeedbackPrompt: Bool {
         get {
             return data.feedbackPromptShouldDisplay
         }
@@ -622,7 +623,7 @@ public class Appero {
     // MARK: - Miscellaneous Functions
     
     /// Resets all local data (queued experiences, user ID etc). You might use this when the user logs out or when testing your integration, however in typical use it's not required.
-    public func reset() {
+    @objc public func reset() {
         // Clear user ID from UserDefaults
         UserDefaults.standard.removeObject(forKey: Constants.kUserIdKey)
         
@@ -642,7 +643,7 @@ public class Appero {
     }
     
     /// Convenience function for requesting an app store rating. We recommend letting Appero handle when this is called to maximise your chances of a positive rating.
-    public func requestAppStoreRating() {
+    @objc public func requestAppStoreRating() {
         #if os(macOS)
         SKStoreReviewController.requestReview()
         #else
