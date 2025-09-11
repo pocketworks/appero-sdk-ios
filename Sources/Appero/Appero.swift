@@ -289,7 +289,7 @@ import SwiftUI
     /// - Parameters:
     ///   - experience: The experience rating
     ///   - context: Optional context string to provide additional information
-    public func log(experience: ExperienceRating, context: String? = nil) {
+    @objc public func log(experience: ExperienceRating, context: String? = nil) {
         let experienceRecord = Experience(date: Date(), value: experience, context: context)
         
         Task {
