@@ -4,8 +4,7 @@ The in-app feedback widget that drives organic growth.
 
 ### Requirements
 
-* iOS 15 or later for the basic library functions
-* iOS 16 or later to use the built-in feedback UI
+* iOS 16 or later
 * This is primarily a Swift based SDK but some core functions are available in Objective-C to aid integration in mixed codebases
 
 ## Adding the Appero SDK to your project
@@ -34,8 +33,8 @@ Appero.instance.start(
 
 Objective-C
 ```
-    [[Appero instance] startWithApiKey: @"your_api_key" 
-                                userId: @"your_user_id"]
+[[Appero instance] startWithApiKey: @"your_api_key" 
+                            userId: @"your_user_id"]
 ```
     
 You can then access the instance to access the SDK's functionality from anywhere in your app it makes sense.
