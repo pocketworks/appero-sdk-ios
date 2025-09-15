@@ -244,6 +244,7 @@ private struct NegativeFlowView: View {
     let onSubmit: (_ feedback: String)->(Void)
     
     @State var feedbackText: String = ""
+    @State var submitEnabled = false
     
     @FocusState private var feedbackFieldFocused: Bool
     
@@ -273,6 +274,7 @@ private struct NegativeFlowView: View {
                     .accentColor(Appero.instance.theme.cursorColor)
                     .onChange(of: feedbackText) { text in
                         feedbackText = String(text.prefix(kFeedbackLimit))
+                        submitEnabled = feedbackText.count > 0
                     }
                     .focused($feedbackFieldFocused)
                 }.onTapGesture {
@@ -296,6 +298,7 @@ private struct NegativeFlowView: View {
                         Spacer()
                     }
                 }
+                .disabled(!submitEnabled)
                 .buttonStyle(ApperoButtonStyle())
                 Button {
                     onCancel()
@@ -316,6 +319,8 @@ private struct NegativeFlowView: View {
 }
 
 private struct ApperoButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+    
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .padding(EdgeInsets(top: 8.0, leading: 8.0, bottom: 8.0, trailing: 8.0))
@@ -325,6 +330,7 @@ private struct ApperoButtonStyle: ButtonStyle {
             .clipShape(Capsule())
             .scaleEffect(configuration.isPressed ? 1.05 : 1)
             .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
+            .opacity(isEnabled ? (configuration.isPressed ? 0.8 : 1.0) : 0.5)
     }
 }
 
@@ -335,14 +341,6 @@ private struct ApperoTextButtonStyle: ButtonStyle {
             .foregroundStyle(Appero.instance.theme.buttonColor)
             .font(Appero.instance.theme.buttonFont)
             .scaleEffect(configuration.isPressed ? 1.05 : 1)
-            .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
-    }
-}
-
-private struct RatingButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .scaleEffect(configuration.isPressed ? 1.2 : 1)
             .animation(.easeOut(duration: 0.2), value: configuration.isPressed)
     }
 }
@@ -363,7 +361,6 @@ private struct RatingView: View {
                     Appero.instance.theme.imageFor(rating: ApperoRating(rawValue: index) ?? .average)
                         .opacity(selectedRating == 0 || selectedRating == index ? 1.0 : 0.3)
                 })
-                .buttonStyle(RatingButtonStyle())
                 .accessibilityLabel(String(localized: localizableStrings[index - 1], bundle: .appero))
             }
         }
