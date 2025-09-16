@@ -21,6 +21,8 @@ import SwiftUI
         static let kUserIdKey = "appero_user_id"
         static let kApperoDataFile = "ApperoData.json"
         
+        static let kFeedbackMaxLength = 240
+        
         static let defaultTitle = String(localized: "DefaultTitle", bundle: .appero)
         static let defaultSubtitle = String(localized: "DefaultSubtitle", bundle: .appero)
         static let defaultPrompt = String(localized: "DefaultPrompt", bundle: .appero)
@@ -29,8 +31,8 @@ import SwiftUI
         static let retryTimerInterval: TimeInterval = 180.0 // 3 minutes
     }
     
-    @objc public enum ExperienceRating: Int, Codable {
-        case strongPositive = 5
+    @objc public enum ExperienceRating: Int, CaseIterable, Codable {
+        case strongPositive = 55
         case positive = 4
         case neutral = 3
         case negative = 2
@@ -247,21 +249,12 @@ import SwiftUI
     /// Sets up network path monitoring to track connectivity status
     private func setupNetworkMonitoring() {
         networkMonitor.pathUpdateHandler = { [weak self] path in
-            DispatchQueue.main.async {
-                
+            Task { @MainActor in
                 guard let self = self else {
                     return
                 }
                 
                 self.isConnected = path.status == .satisfied && !self.forceOfflineMode
-                
-                // If we regain connectivity and have unsent experiences, try to send them immediately
-                if self.isConnected == true {
-                    Task {
-                        await self.processUnsentExperiences()
-                        await self.processUnsentFeedback()
-                    }
-                }
             }
         }
         networkMonitor.start(queue: networkQueue)
@@ -271,6 +264,7 @@ import SwiftUI
     private func startRetryTimer() {
         retryTimer = Timer.scheduledTimer(withTimeInterval: Constants.retryTimerInterval, repeats: true) { [weak self] _ in
             Task {
+                ApperoDebug.log("Attempting to send queued experiences/feedback")
                 await self?.processUnsentExperiences()
                 await self?.processUnsentFeedback()
             }
@@ -466,21 +460,23 @@ import SwiftUI
             handleExperienceResponse(response: try JSONDecoder().decode(ExperienceResponse.self, from: data))
             
         } catch let error as ApperoAPIError {
-            ApperoDebug.log(" Failed to send experience - queuing for retry")
+            ApperoDebug.log("Failed to send experience - queuing for retry")
             
             switch error {
-            case .networkError(statusCode: let code):
+                case .validationError(response: let response):
+                    ApperoDebug.log("Validation error: \(response?.description() ?? "Unknown")")
+                case .networkError(statusCode: let code):
                     ApperoDebug.log("Network error \(code)")
-            case .noData:
+                case .noData:
                     ApperoDebug.log("No data received")
-            case .noResponse:
-                    ApperoDebug.log(" No response received")
+                case .noResponse:
+                    ApperoDebug.log("No response received")
             }
             
             queueExperience(experience)
             
         } catch {
-            ApperoDebug.log(" Unknown error sending experience - queuing for retry: \(error)")
+            ApperoDebug.log("Unknown error sending experience - queuing for retry: \(error)")
             queueExperience(experience)
         }
     }
@@ -491,6 +487,11 @@ import SwiftUI
         guard let apiKey = apiKey, let clientId = userId else {
             ApperoDebug.log("Cannot send feedback - API key or client ID not set")
             queueFeedback(feedback)
+            return
+        }
+        
+        if let feedbackString = feedback.feedback, feedbackString.count > Constants.kFeedbackMaxLength {
+            ApperoDebug.log("Cannot send feedback - text exceeds maximum character count \(feedbackString.count) > \(Constants.kFeedbackMaxLength)")
             return
         }
         
@@ -522,6 +523,8 @@ import SwiftUI
             ApperoDebug.log("Failed to send feedback - queuing for retry")
             
             switch error {
+                case .validationError(response: let response):
+                    ApperoDebug.log("Validation error: \(response?.description() ?? "Unknown")")
                 case .networkError(statusCode: let code):
                     ApperoDebug.log("Network error \(code)")
                 case .noData:
@@ -602,6 +605,8 @@ import SwiftUI
             ApperoDebug.log("Error submitting feedback - queuing for retry")
             
             switch error {
+                case .validationError(response: let response):
+                    ApperoDebug.log("Validation error: \(response?.description() ?? "Unknown")")
                 case .networkError(statusCode: let code):
                     ApperoDebug.log("Network error \(code)")
                 case .noData:

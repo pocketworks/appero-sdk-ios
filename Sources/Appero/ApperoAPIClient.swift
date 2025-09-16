@@ -9,6 +9,7 @@ import Foundation
 enum ApperoAPIError: Error {
     case noData
     case networkError(statusCode: Int)
+    case validationError(response: ValidationErrorResponse?)
     case noResponse
 }
 
@@ -19,6 +20,43 @@ enum FlowType: String, Codable {
     case neutral = "neutral"
     /// indicates a negative overall experience
     case frustration = "frustration"
+}
+
+struct ValidationErrorResponse: Codable {
+    
+    struct Details: Codable {
+        let userId: [String]?
+        let value: [String]?
+        
+        enum CodingKeys: String, CodingKey {
+            case userId = "user_id"
+            case value
+        }
+    }
+    
+    let error: String?
+    let message: String?
+    let details: Details?
+    
+    func description() -> String {
+        var returnString = ""
+        if let error = error {
+            returnString += "\(error)\n"
+        }
+        if let message = message {
+            returnString += "         Server message: \(message)\n"
+        }
+        if let details = details {
+            if let userId = details.userId?.first {
+                returnString += "         > \(userId)\n"
+            }
+            if let value = details.value?.first {
+                returnString += "         > \(value)"
+            }
+        }
+        
+        return returnString
+    }
 }
 
 struct ApperoAPIClient {
@@ -44,6 +82,7 @@ struct ApperoAPIClient {
         request.addValue("Bearer " + authorization, forHTTPHeaderField: "Authorization")
         request.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: fields, options: [])
+        request.timeoutInterval = 10
 
         let (responseBody, response) = try await ApperoAPIClient.session.data(for: request)
 
@@ -58,6 +97,9 @@ struct ApperoAPIClient {
             case (200...204):
                 // success
                 return responseBody
+            case 422:
+                // failure w/ error message
+                throw ApperoAPIError.validationError(response: try? JSONDecoder().decode(ValidationErrorResponse.self, from: responseBody))
             default:
                 // failure
                 throw ApperoAPIError.networkError(statusCode: response.statusCode)

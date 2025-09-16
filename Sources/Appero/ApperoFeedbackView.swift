@@ -137,8 +137,6 @@ public struct ApperoFeedbackView: View {
 @available(iOS 16, *)
 private struct FeedbackView: View {
     
-    let kFeedbackLimit = 240
-    
     let strings: Appero.FeedbackUIStrings
     let onRatingChosen: (_ rating: Int)->(Void)
     let onSubmit: (_ rating: Int, _ feedback: String)->(Void)
@@ -200,7 +198,7 @@ private struct FeedbackView: View {
                         .padding(.all)
                         .accentColor(Appero.instance.theme.cursorColor)
                         .onChange(of: feedbackText) { text in
-                            feedbackText = String(text.prefix(kFeedbackLimit))
+                            feedbackText = String(text.prefix(Appero.Constants.kFeedbackMaxLength))
                         }
                         .focused($feedbackFieldFocused)
                     }.onTapGesture {
@@ -208,7 +206,7 @@ private struct FeedbackView: View {
                     }
                     HStack {
                         Spacer()
-                        Text("\(feedbackText.count) / \(kFeedbackLimit)")
+                        Text("\(feedbackText.count) / \(Appero.Constants.kFeedbackMaxLength)")
                             .font(Appero.instance.theme.captionFont)
                             .foregroundStyle(Appero.instance.theme.secondaryTextColor)
                     }
@@ -236,8 +234,6 @@ private struct FeedbackView: View {
 
 @available(iOS 16, *)
 private struct NegativeFlowView: View {
-    
-    let kFeedbackLimit = 240
     
     let strings: Appero.FeedbackUIStrings
     let onCancel: ()->(Void)
@@ -273,7 +269,7 @@ private struct NegativeFlowView: View {
                     .padding(.all)
                     .accentColor(Appero.instance.theme.cursorColor)
                     .onChange(of: feedbackText) { text in
-                        feedbackText = String(text.prefix(kFeedbackLimit))
+                        feedbackText = String(text.prefix(Appero.Constants.kFeedbackMaxLength))
                         submitEnabled = feedbackText.count > 0
                     }
                     .focused($feedbackFieldFocused)
@@ -282,7 +278,7 @@ private struct NegativeFlowView: View {
                 }
                 HStack {
                     Spacer()
-                    Text("\(feedbackText.count) / \(kFeedbackLimit)")
+                    Text("\(feedbackText.count) / \(Appero.Constants.kFeedbackMaxLength)")
                         .font(Appero.instance.theme.captionFont)
                         .foregroundStyle(Appero.instance.theme.secondaryTextColor)
                 }
