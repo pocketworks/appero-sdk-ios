@@ -32,7 +32,7 @@ import SwiftUI
     }
     
     @objc public enum ExperienceRating: Int, CaseIterable, Codable {
-        case strongPositive = 55
+        case strongPositive = 5
         case positive = 4
         case neutral = 3
         case negative = 2
