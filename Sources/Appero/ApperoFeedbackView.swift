@@ -192,7 +192,6 @@ private struct FeedbackView: View {
                             .foregroundColor(Appero.instance.theme.textFieldBackgroundColor)
                         TextField(text: $feedbackText, prompt: Text(strings.prompt).foregroundColor(Appero.instance.theme.primaryTextColor.opacity(0.5)),
                                   axis: .vertical, label: {})
-                        .lineLimit(2...5)
                         .foregroundColor(Appero.instance.theme.primaryTextColor)
                         .font(Appero.instance.theme.bodyFont)
                         .padding(.all)
@@ -263,7 +262,6 @@ private struct NegativeFlowView: View {
                         .foregroundColor(Appero.instance.theme.textFieldBackgroundColor)
                     TextField(text: $feedbackText, prompt: Text(strings.prompt).foregroundColor(Appero.instance.theme.primaryTextColor.opacity(0.5)),
                               axis: .vertical, label: {})
-                    .lineLimit(1...5)
                     .foregroundColor(Appero.instance.theme.primaryTextColor)
                     .font(Appero.instance.theme.bodyFont)
                     .padding(.all)
@@ -434,7 +432,7 @@ private struct ThanksView: View {
             Spacer()
             Text(message)
                 .padding(.horizontal)
-                .lineLimit(2)
+                //.lineLimit(3)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Appero.instance.theme.primaryTextColor)
             Spacer()
