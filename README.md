@@ -27,7 +27,7 @@ Swift:
 ```
 Appero.instance.start(
     apiKey: "your_api_key",
-    clientId: "your_user_id"
+    userId: "your_user_id"
 )
 ```
 

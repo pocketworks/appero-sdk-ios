@@ -463,8 +463,8 @@ import SwiftUI
             ApperoDebug.log("Failed to send experience - queuing for retry")
             
             switch error {
-                case .validationError(response: let response):
-                    ApperoDebug.log("Validation error: \(response?.description() ?? "Unknown")")
+                case .serverMessage(response: let response):
+                    ApperoDebug.log(response?.description() ?? "Unknown")
                 case .networkError(statusCode: let code):
                     ApperoDebug.log("Network error \(code)")
                 case .noData:
@@ -523,8 +523,8 @@ import SwiftUI
             ApperoDebug.log("Failed to send feedback - queuing for retry")
             
             switch error {
-                case .validationError(response: let response):
-                    ApperoDebug.log("Validation error: \(response?.description() ?? "Unknown")")
+                case .serverMessage(response: let response):
+                    ApperoDebug.log(response?.description() ?? "Unknown")
                 case .networkError(statusCode: let code):
                     ApperoDebug.log("Network error \(code)")
                 case .noData:
@@ -605,8 +605,8 @@ import SwiftUI
             ApperoDebug.log("Error submitting feedback - queuing for retry")
             
             switch error {
-                case .validationError(response: let response):
-                    ApperoDebug.log("Validation error: \(response?.description() ?? "Unknown")")
+                case .serverMessage(response: let response):
+                    ApperoDebug.log(response?.description() ?? "Unknown")
                 case .networkError(statusCode: let code):
                     ApperoDebug.log("Network error \(code)")
                 case .noData:

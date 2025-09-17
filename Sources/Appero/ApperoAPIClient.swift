@@ -9,7 +9,7 @@ import Foundation
 enum ApperoAPIError: Error {
     case noData
     case networkError(statusCode: Int)
-    case validationError(response: ValidationErrorResponse?)
+    case serverMessage(response: ApperoErrorResponse?)
     case noResponse
 }
 
@@ -22,7 +22,7 @@ enum FlowType: String, Codable {
     case frustration = "frustration"
 }
 
-struct ValidationErrorResponse: Codable {
+struct ApperoErrorResponse: Codable {
     
     struct Details: Codable {
         let userId: [String]?
@@ -97,9 +97,9 @@ struct ApperoAPIClient {
             case (200...204):
                 // success
                 return responseBody
-            case 422:
+            case 401, 422:
                 // failure w/ error message
-                throw ApperoAPIError.validationError(response: try? JSONDecoder().decode(ValidationErrorResponse.self, from: responseBody))
+                throw ApperoAPIError.serverMessage(response: try? JSONDecoder().decode(ApperoErrorResponse.self, from: responseBody))
             default:
                 // failure
                 throw ApperoAPIError.networkError(statusCode: response.statusCode)
