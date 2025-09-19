@@ -65,51 +65,76 @@ __Important:__ We strongly recommend that you avoid sending sensitive user infor
 
 ## Triggering the Appero Feedback UI
 
-Appero is built using SwiftUI and is very easy to integrate into your app, even if you're using UIKit. To integrate with SwiftUI use the .sheet property on a view in your app's view hierarchy. The UI can then be triggered using a state variable based on your user's experience point value or in response to direct interaction (e.g a button).
+Appero is built using SwiftUI and is very easy to integrate into your app, even if you're using UIKit. To integrate with SwiftUI use the .sheet property on a view in your app's view hierarchy. The UI can then be triggered by monitoring the published shouldShowFeedbackPrompt property on the Appero instance. For UIKit apps you can instead add an observer for the kApperoFeedbackPromptNotification notification.
 
+The UI text is configurable through the Appero dashboard and can be configured separately for the negative and neutral/positive flows.
+
+**SwiftUI:**
 ```
 struct ContentView: View {
-    
-    @State private var showingAppero: Bool = false
+    @ObservedObject private var appero = Appero.instance
     
     var body: some View {
         YourAppsView {
         }
-        .sheet(isPresented: $showingAppero) {
+        .sheet(isPresented: $appero.shouldShowFeedbackPrompt) {
             ApperoFeedbackView()
         }
     }
 }
 ```
 
-The UI text is configurable through the Appero dashboard and can be configured separately for the negative and neutral/positive flows.
-
-Use the property `shouldShowAppero` to determine whether or not the prompt should be shown based on the experience score and whether feedback has already been submitted. When testing your integration we recommend setting a low experience threshold.
+**UIKit:**
 
 For UIKit based apps we leverage Apple's `UIHostingController` with the helper container view `ApperoPresentationView` which we can present as a child view controller over the top of whatever view controller you have displayed. Define the `UIHostingController<ApperoPresentationView>` as an instance var on your view controller.
 
 ```
-let apperoView = ApperoPresentationView() { [weak self] in
-    
-     guard let self = self else { return }
-    // remove the child view controller when the panel is dismissed
-    self.hostingController?.willMove(toParent: nil)
-    self.hostingController?.view.removeFromSuperview()
-    self.hostingController?.removeFromParent()
+override func viewDidLoad() {
+    super.viewDidLoad()
+
+    NotificationCenter.default.addObserver(
+        self,
+        selector: #selector(showApperoNotification(_:)),
+        name: Appero.kApperoFeedbackPromptNotification,
+        object: nil
+    )
 }
 
-hostingController = UIHostingController(rootView: apperoView)
-hostingController?.view.translatesAutoresizingMaskIntoConstraints = false
+@objc func showApperoNotification(_: Notification) {
+    Task { @MainActor in
+        func showerAppero()
+    }
+}
+```
 
-if let hostingController = hostingController {
-    hostingController.view.backgroundColor = .clear
-    addChild(hostingController)
-    view.addSubview(hostingController.view)
-    hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-    hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-    hostingController.view.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-    hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-    hostingController.didMove(toParent: self)
+__Important:__ In your notification handling method either dispatch on the main thread when using GCD or spin up a task on the main actor to present the UI.
+
+For UIKit based apps we leverage Apple's `UIHostingController` with the helper container view `ApperoPresentationView` which we can present as a child view controller over the top of whatever view controller you have displayed. Define the `UIHostingController<ApperoPresentationView>` as an instance var on your view controller.
+
+```
+func showerAppero() {
+    let apperoView = ApperoPresentationView() { [weak self] in
+        
+         guard let self = self else { return }
+        // remove the child view controller when the panel is dismissed
+        self.hostingController?.willMove(toParent: nil)
+        self.hostingController?.view.removeFromSuperview()
+        self.hostingController?.removeFromParent()
+    }
+
+    hostingController = UIHostingController(rootView: apperoView)
+    hostingController?.view.translatesAutoresizingMaskIntoConstraints = false
+
+    if let hostingController = hostingController {
+        hostingController.view.backgroundColor = .clear
+        addChild(hostingController)
+        view.addSubview(hostingController.view)
+        hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+        hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        hostingController.view.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        hostingController.didMove(toParent: self)
+    }
 }
 ```
 
