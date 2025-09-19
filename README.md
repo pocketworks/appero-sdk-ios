@@ -72,7 +72,7 @@ The UI text is configurable through the Appero dashboard and can be configured s
 **SwiftUI:**
 ```
 struct ContentView: View {
-    @ObservedObject private var appero = Appero.instance
+    @StateObject private var appero = Appero.instance
     
     var body: some View {
         YourAppsView {

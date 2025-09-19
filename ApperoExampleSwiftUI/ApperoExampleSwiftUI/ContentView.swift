@@ -3,7 +3,7 @@ import Appero
 
 struct ContentView: View {
     
-    @ObservedObject private var appero = Appero.instance
+    @StateObject private var appero = Appero.instance
     @State private var theme = 0
     @State private var forceShowFeedbackUI = false
     
@@ -45,9 +45,11 @@ struct ContentView: View {
                             .foregroundStyle(.green)
                         Text("Very Positive")
                     }
+                    .frame(maxWidth: .infinity)
                     .padding()
                     .background(Color.green.opacity(0.2))
                     .cornerRadius(10)
+                    
                 })
                 
                 Button(action: {
@@ -59,9 +61,11 @@ struct ContentView: View {
                             .foregroundStyle(.green)
                         Text("Positive")
                     }
+                    .frame(maxWidth: .infinity)
                     .padding()
                     .background(Color.green.opacity(0.1))
                     .cornerRadius(10)
+                    
                 })
                 
                 Button(action: {
@@ -73,6 +77,7 @@ struct ContentView: View {
                             .foregroundStyle(.orange)
                         Text("Neutral")
                     }
+                    .frame(maxWidth: .infinity)
                     .padding()
                     .background(Color.orange.opacity(0.1))
                     .cornerRadius(10)
@@ -87,6 +92,7 @@ struct ContentView: View {
                             .foregroundStyle(.red)
                         Text("Negative")
                     }
+                    .frame(maxWidth: .infinity)
                     .padding()
                     .background(Color.red.opacity(0.1))
                     .cornerRadius(10)
@@ -101,6 +107,7 @@ struct ContentView: View {
                             .foregroundStyle(.red)
                         Text("Very Negative")
                     }
+                    .frame(maxWidth: .infinity)
                     .padding()
                     .background(Color.red.opacity(0.2))
                     .cornerRadius(10)
