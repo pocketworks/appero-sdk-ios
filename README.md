@@ -86,8 +86,6 @@ struct ContentView: View {
 
 **UIKit:**
 
-For UIKit based apps we leverage Apple's `UIHostingController` with the helper container view `ApperoPresentationView` which we can present as a child view controller over the top of whatever view controller you have displayed. Define the `UIHostingController<ApperoPresentationView>` as an instance var on your view controller.
-
 ```
 override func viewDidLoad() {
     super.viewDidLoad()
@@ -112,6 +110,8 @@ __Important:__ In your notification handling method either dispatch on the main 
 For UIKit based apps we leverage Apple's `UIHostingController` with the helper container view `ApperoPresentationView` which we can present as a child view controller over the top of whatever view controller you have displayed. Define the `UIHostingController<ApperoPresentationView>` as an instance var on your view controller.
 
 ```
+var hostingController: UIHostingController<ApperoPresentationView>?
+
 func showerAppero() {
     let apperoView = ApperoPresentationView() { [weak self] in
         
