@@ -20,6 +20,19 @@ final class ApperoTests: XCTestCase {
     
     // MARK: - Initialization Tests
     
+    func testExperienceValues() {
+        // Test that experience values are within the expected range
+        
+        var totalExperiencePoints = 0
+        for experience in Appero.ExperienceRating.allCases {
+            totalExperiencePoints += experience.rawValue
+        }
+
+        let expectedExperienceChecksum = 5 + 4 + 3 + 2 + 1
+        
+        XCTAssertEqual(totalExperiencePoints, expectedExperienceChecksum)
+    }
+    
     func testClientIdGeneration() {
         // Test that a client ID is generated when none is provided
         appero.reset()

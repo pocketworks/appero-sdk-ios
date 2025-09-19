@@ -4,8 +4,8 @@ The in-app feedback widget that drives organic growth.
 
 ### Requirements
 
-* iOS 15 or later for the basic library functions
-* iOS 16 or later to use the built-in feedback UI
+* iOS 16 or later
+* This is primarily a Swift based SDK but some core functions are available in Objective-C to aid integration in mixed codebases
 
 ## Adding the Appero SDK to your project
 
@@ -17,38 +17,40 @@ https://github.com/pocketworks/appero-sdk-ios
 
 __Important:__ If your app isn't localised or doesn't include an English localisation, please add `CFBundleAllowMixedLocalizations` to your info.plist and set its value to `true` or text in the Appero UI may not appear correctly. We're hoping to add more localisations to Appero in future releases.
 
-Appero caches experiences and feedback that's been logged to a json file, so that in the event that the user's device is offline or a network request fails, we don't lose any data. Appero will attempt to resend this data later when the connection is restored. The json file is stored in your app's documents directory. The file can be cleared using `Appero.instance.reset()`, you may want to call this in the event that a user logs out or deletes their account in your app. The user ID supplied to Appero is also cached, however for that we store it in the User Defaults dictionary. This allows us to persist the automatic UUID we generate to identify users for instances where a custom user ID has not been specified. We would recommend in most cases where you have an app with some kind of accounts feature, to use a common ID between your backend, Appero and any other analytics services to make it easier to manage your data and protect user privacy.
+Appero caches experiences and feedback that have been logged to a json file, so that in the event that the user's device is offline or a network request fails, we don't lose any data. Appero will attempt to resend this data later when the connection is restored. The json file is stored in your app's documents directory. The file can be cleared using `Appero.instance.reset()`, you may want to call this in the event that a user logs out or deletes their account in your app. The user ID supplied to Appero is also cached, however for that we store it in UserDefaults. This allows us to persist the automatic UUID we generate to identify users for cases where a custom user ID has not been specified. We would recommend in most cases where you have an app with some kind of accounts feature, to use a common ID between your backend, Appero and any other analytics services to make it easier to manage your data and protect user privacy.
 
 ## Getting Started
 
 The Appero SDK for iOS is based around a shared instance model that can be accessed from anywhere in your code once initialised. We recommend initialising Appero in either your main view's init() method for a SwiftUI app or in applicationDidFinishLaunching in a storyboard/UIKit based app.
 
+Swift:
 ```
 Appero.instance.start(
     apiKey: "your_api_key",
-    clientId: "your_user_id"
+    userId: "your_user_id"
 )
 ```
 
+Objective-C
+```
+[[Appero instance] startWithApiKey: @"your_api_key" 
+                            userId: @"your_user_id"]
+```
+    
 You can then access the instance to access the SDK's functionality from anywhere in your app it makes sense.
-
-For example triggering the send feedback API can to be called as such:
-
-```
-Task {
-    await Appero.instance.postFeedback(
-        rating: 5,
-        feedback: "Posted from the SwiftUI Example App"
-    )
-}
-```
 
 ## Monitoring User Experience
 
 One of the core ideas in Appero is that we're tracking positive and negative user experiences. Once the number of experiences logged crosses the threshold defined on the Appero dashboard, we want to prompt the user to give us their feedback – be it positive or constructive. We call `log(experience: Experience, context: String)` to record individual experiences. The context string is used to categorise the experience and can be used to track outcomes of user flows, monitor for error states and so on.
 
+Swift:
 ```
 Appero.instance.log(experience: .strongPositive, context: "User started free trial")
+```
+
+Objective-C
+```
+[[Appero instance] logWithExperience: ExperienceRatingStrongPositive context: @"User started free trial"];
 ```
 
 Typical types of user experience you will want to add logging for are:
@@ -63,51 +65,76 @@ __Important:__ We strongly recommend that you avoid sending sensitive user infor
 
 ## Triggering the Appero Feedback UI
 
-Appero is built using SwiftUI and is very easy to integrate into your app, even if you're using UIKit. To integrate with SwiftUI use the .sheet property on a view in your app's view hierarchy. The UI can then be triggered using a state variable based on your user's experience point value or in response to direct interaction (e.g a button).
+Appero is built using SwiftUI and is very easy to integrate into your app, even if you're using UIKit. To integrate with SwiftUI use the .sheet property on a view in your app's view hierarchy. The UI can then be triggered by monitoring the published shouldShowFeedbackPrompt property on the Appero instance. For UIKit apps you can instead add an observer for the kApperoFeedbackPromptNotification notification.
 
+The UI text is configurable through the Appero dashboard and can be configured separately for the negative and neutral/positive flows.
+
+**SwiftUI:**
 ```
 struct ContentView: View {
-    
-    @State private var showingAppero: Bool = false
+    @StateObject private var appero = Appero.instance
     
     var body: some View {
         YourAppsView {
         }
-        .sheet(isPresented: $showingAppero) {
+        .sheet(isPresented: $appero.shouldShowFeedbackPrompt) {
             ApperoFeedbackView()
         }
     }
 }
 ```
 
-The UI text is configurable through the Appero dashboard and can be configured separately for the negative and neutral/positive flows.
+**UIKit:**
 
-Use the property `shouldShowAppero` to determine whether or not the prompt should be shown based on the experience score and whether feedback has already been submitted. When testing your integration we recommend setting a low experience threshold.
+```
+override func viewDidLoad() {
+    super.viewDidLoad()
+
+    NotificationCenter.default.addObserver(
+        self,
+        selector: #selector(showApperoNotification(_:)),
+        name: Appero.kApperoFeedbackPromptNotification,
+        object: nil
+    )
+}
+
+@objc func showApperoNotification(_: Notification) {
+    Task { @MainActor in
+        func showAppero()
+    }
+}
+```
+
+__Important:__ In your notification handling method either dispatch on the main thread when using GCD or spin up a task on the main actor to present the UI.
 
 For UIKit based apps we leverage Apple's `UIHostingController` with the helper container view `ApperoPresentationView` which we can present as a child view controller over the top of whatever view controller you have displayed. Define the `UIHostingController<ApperoPresentationView>` as an instance var on your view controller.
 
 ```
-let apperoView = ApperoPresentationView() { [weak self] in
-    
-     guard let self = self else { return }
-    // remove the child view controller when the panel is dismissed
-    self.hostingController?.willMove(toParent: nil)
-    self.hostingController?.view.removeFromSuperview()
-    self.hostingController?.removeFromParent()
-}
+var hostingController: UIHostingController<ApperoPresentationView>?
 
-hostingController = UIHostingController(rootView: apperoView)
-hostingController?.view.translatesAutoresizingMaskIntoConstraints = false
+func showAppero() {
+    let apperoView = ApperoPresentationView() { [weak self] in
+        
+         guard let self = self else { return }
+        // remove the child view controller when the panel is dismissed
+        self.hostingController?.willMove(toParent: nil)
+        self.hostingController?.view.removeFromSuperview()
+        self.hostingController?.removeFromParent()
+    }
 
-if let hostingController = hostingController {
-    hostingController.view.backgroundColor = .clear
-    addChild(hostingController)
-    view.addSubview(hostingController.view)
-    hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
-    hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
-    hostingController.view.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
-    hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
-    hostingController.didMove(toParent: self)
+    hostingController = UIHostingController(rootView: apperoView)
+    hostingController?.view.translatesAutoresizingMaskIntoConstraints = false
+
+    if let hostingController = hostingController {
+        hostingController.view.backgroundColor = .clear
+        addChild(hostingController)
+        view.addSubview(hostingController.view)
+        hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor).isActive = true
+        hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor).isActive = true
+        hostingController.view.topAnchor.constraint(equalTo: view.topAnchor).isActive = true
+        hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor).isActive = true
+        hostingController.didMove(toParent: self)
+    }
 }
 ```
 

@@ -19,13 +19,15 @@ struct ApperoExampleSwiftUIApp: App {
     
     init() {
         
+        loadRocketSimConnect()
+        
         // For the demo app we want to reset things on each launch
         // You likely wouldn't want to do this in a real app
         Appero.instance.reset()
         
         // Initialize Appero with the new API
         Appero.instance.start(
-            apiKey: "your api key",
+            apiKey: "your_api_key",
             userId: "test_user_1"
         )
         
