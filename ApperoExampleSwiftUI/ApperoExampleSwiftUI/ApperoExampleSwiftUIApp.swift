@@ -37,14 +37,4 @@ struct ApperoExampleSwiftUIApp: App {
         // Set the theme to use for the Appero UI
         Appero.instance.theme = DefaultTheme()
     }
-    
-    private func loadRocketSimConnect() {
-        #if DEBUG
-        guard (Bundle(path: "/Applications/RocketSim.app/Contents/Frameworks/RocketSimConnectLinker.nocache.framework")?.load() == true) else {
-            print("Failed to load linker framework")
-            return
-        }
-        print("RocketSim Connect successfully linked")
-        #endif
-    }
 }
