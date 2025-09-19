@@ -100,7 +100,7 @@ override func viewDidLoad() {
 
 @objc func showApperoNotification(_: Notification) {
     Task { @MainActor in
-        func showerAppero()
+        func showAppero()
     }
 }
 ```
@@ -112,7 +112,7 @@ For UIKit based apps we leverage Apple's `UIHostingController` with the helper c
 ```
 var hostingController: UIHostingController<ApperoPresentationView>?
 
-func showerAppero() {
+func showAppero() {
     let apperoView = ApperoPresentationView() { [weak self] in
         
          guard let self = self else { return }
