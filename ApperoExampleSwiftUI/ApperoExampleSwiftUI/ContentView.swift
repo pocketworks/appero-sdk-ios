@@ -3,8 +3,9 @@ import Appero
 
 struct ContentView: View {
     
-    @State private var showingAppero = false
+    @ObservedObject private var appero = Appero.instance
     @State private var theme = 0
+    @State private var forceShowFeedbackUI = false
     
     var body: some View {
         VStack(spacing: 20) {
@@ -37,7 +38,6 @@ struct ContentView: View {
             VStack(spacing: 15) {
                 Button(action: {
                     Appero.instance.log(experience: .strongPositive, context: "Very positive button tapped")
-                    checkShouldShowFeedback()
                 }, label: {
                     HStack {
                         Image(systemName: "hand.thumbsup.fill")
@@ -52,7 +52,6 @@ struct ContentView: View {
                 
                 Button(action: {
                     Appero.instance.log(experience: .positive, context: "Positive button tapped")
-                    checkShouldShowFeedback()
                 }, label: {
                     HStack {
                         Image(systemName: "hand.thumbsup")
@@ -67,7 +66,6 @@ struct ContentView: View {
                 
                 Button(action: {
                     Appero.instance.log(experience: .neutral, context: "Neutral button tapped")
-                    checkShouldShowFeedback()
                 }, label: {
                     HStack {
                         Image(systemName: "circle.dotted")
@@ -82,7 +80,6 @@ struct ContentView: View {
                 
                 Button(action: {
                     Appero.instance.log(experience: .negative, context: "Negative button tapped")
-                    checkShouldShowFeedback()
                 }, label: {
                     HStack {
                         Image(systemName: "hand.thumbsdown")
@@ -97,7 +94,6 @@ struct ContentView: View {
                 
                 Button(action: {
                     Appero.instance.log(experience: .strongNegative, context: "Strong negative button tapped")
-                    checkShouldShowFeedback()
                 }, label: {
                     HStack {
                         Image(systemName: "hand.thumbsdown.fill")
@@ -114,7 +110,7 @@ struct ContentView: View {
             Spacer()
             
             Button(action: {
-                showingAppero = true
+                appero.shouldShowFeedbackPrompt = true
             }, label: {
                 HStack {
                     Text("Manually Trigger Feedback")
@@ -125,16 +121,8 @@ struct ContentView: View {
             })
         }
         .padding()
-        .sheet(isPresented: $showingAppero) {
+        .sheet(isPresented: $appero.shouldShowFeedbackPrompt) {
             ApperoFeedbackView()
-        }
-    }
-    
-    func checkShouldShowFeedback() {
-        // Check if we should automatically show the feedback prompt
-        if Appero.instance.shouldShowFeedbackPrompt {
-            showingAppero = true
-            Appero.instance.shouldShowFeedbackPrompt = false // Reset after showing
         }
     }
 }

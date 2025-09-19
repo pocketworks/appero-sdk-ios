@@ -69,7 +69,7 @@ struct ApperoAPIClient {
         case delete
     }
     
-    private static let apiBaseURL = URL(string: "https://app.appero.co.uk/api/v1")!
+    internal static let apiBaseURL = URL(string: "https://app.appero.co.uk/api/v1")!
     private static let session = URLSession(configuration: URLSessionConfiguration.default, delegate: nil, delegateQueue: nil)
     
     

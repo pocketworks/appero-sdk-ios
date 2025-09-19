@@ -68,7 +68,8 @@ public struct ApperoFeedbackView: View {
                 HStack(alignment: .top, content: {
                     Spacer()
                     Button {
-                        presentationMode.wrappedValue.dismiss()
+                        Appero.instance.dismissApperoPrompt()
+                        presentationMode.wrappedValue.dismiss() // required for UIKit integration
                     } label: {
                         Image(systemName: "xmark")
                             .tint(.gray)
@@ -80,7 +81,8 @@ public struct ApperoFeedbackView: View {
                 
                 if showThanks {
                     ThanksView(rating: rating) {
-                        presentationMode.wrappedValue.dismiss()
+                        Appero.instance.dismissApperoPrompt()
+                        presentationMode.wrappedValue.dismiss() // required for UIKit integration
                     }
                     .padding(.horizontal)
                 } else {
@@ -108,7 +110,8 @@ public struct ApperoFeedbackView: View {
                             NegativeFlowView(
                                 strings: Appero.instance.feedbackUIStrings,
                                 onCancel: {
-                                    presentationMode.wrappedValue.dismiss()
+                                    presentationMode.wrappedValue.dismiss() // required for UIKit integration
+                                    Appero.instance.dismissApperoPrompt()
                                 },
                                 onSubmit: { feedback in
                                     Task {
@@ -131,6 +134,9 @@ public struct ApperoFeedbackView: View {
         .presentationDetents([thanksDetent, feedbackDetent, ratingDetent], selection: $selectedPanelHeight)
         .presentationDragIndicator(.hidden)
         .animation(.easeOut(duration: 0.2), value: selectedPanelHeight)
+        .onDisappear {
+            Appero.instance.dismissApperoPrompt()
+        }
     }
 }
 

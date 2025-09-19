@@ -15,7 +15,7 @@ import StoreKit
 import Network
 import SwiftUI
 
-@objc public class Appero: NSObject {
+@objc public class Appero: NSObject, ObservableObject {
     
     struct Constants {
         static let kUserIdKey = "appero_user_id"
@@ -120,6 +120,7 @@ import SwiftUI
     
     // Network monitoring and retry timer
     private let networkMonitor = NWPathMonitor()
+    // TODO: move to async stream when we can drop iOS 16 support.
     private let networkQueue = DispatchQueue(label: "appero.network.monitor")
     private var retryTimer: Timer?
     private var isConnected = true
@@ -153,14 +154,8 @@ import SwiftUI
         }
     }
     
-    @objc public var shouldShowFeedbackPrompt: Bool {
-        get {
-            return data.feedbackPromptShouldDisplay
-        }
-        set {
-            data.feedbackPromptShouldDisplay = newValue
-        }
-    }
+    /// Indicates whether the feedback UI should be shown in your app
+    @objc @Published public var shouldShowFeedbackPrompt: Bool = false
     
     public var feedbackUIStrings: Appero.FeedbackUIStrings {
         get {
@@ -198,6 +193,9 @@ import SwiftUI
         }
         set {
             saveApperoData(newValue)
+            Task { @MainActor in
+                shouldShowFeedbackPrompt = newValue.feedbackPromptShouldDisplay
+            }
         }
     }
     
@@ -220,6 +218,12 @@ import SwiftUI
         } catch {
             ApperoDebug.log("Error saving ApperoData to file: \(error)")
         }
+    }
+    
+    /// Call this dismiss the feedback prompt and prevent it reappearing until we next get notified by the server to show it
+    @objc public func dismissApperoPrompt() {
+        shouldShowFeedbackPrompt = false
+        data.feedbackPromptShouldDisplay = false
     }
     
     /// Loads ApperoData from a JSON file
@@ -248,6 +252,7 @@ import SwiftUI
     
     /// Sets up network path monitoring to track connectivity status
     private func setupNetworkMonitoring() {
+        
         networkMonitor.pathUpdateHandler = { [weak self] path in
             Task { @MainActor in
                 guard let self = self else {
@@ -334,7 +339,7 @@ import SwiftUI
                     "build_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
                 ]
                 
-                let data = try await ApperoAPIClient.sendRequest(
+                let response = try await ApperoAPIClient.sendRequest(
                     endPoint: "experiences",
                     fields: experienceData,
                     method: .post,
@@ -344,7 +349,7 @@ import SwiftUI
                 ApperoDebug.log("Experience posted successfully")
                 
                 successfullyProcessed.append(experience)
-                handleExperienceResponse(response: try JSONDecoder().decode(ExperienceResponse.self, from: data))
+                handleExperienceResponse(response: try JSONDecoder().decode(ExperienceResponse.self, from: response))
                 
             } catch {
                 ApperoDebug.log("Failed to send queued experience \(index + 1)/\(currentData.unsentExperiences.count): \(error)")
@@ -389,7 +394,11 @@ import SwiftUI
         for (index, feedback) in currentData.unsentFeedback.enumerated() {
             guard let apiKey = apiKey else {
                 ApperoDebug.log("Cannot process feedback - API key not set")
-                continue
+                return
+            }
+            guard let userId = userId else {
+                ApperoDebug.log("Cannot process feedback - user ID key not set")
+                return
             }
             
             do {
