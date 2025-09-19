@@ -31,6 +31,9 @@ import SwiftUI
         static let retryTimerInterval: TimeInterval = 180.0 // 3 minutes
     }
     
+    /// Notification that is triggered when the feedback prompt should be shown, recommended for use in UIKit based apps
+    public static let kApperoFeedbackPromptNotification = Notification.Name("kApperoFeedbackPromptNotification")
+    
     @objc public enum ExperienceRating: Int, CaseIterable, Codable {
         case strongPositive = 5
         case positive = 4
@@ -557,6 +560,9 @@ import SwiftUI
         // We won't let subsequent responses flip the value here if we're currently due to show the UI
         if currentData.feedbackPromptShouldDisplay == false {
             currentData.feedbackPromptShouldDisplay = response.shouldShowFeedbackUI
+            if response.shouldShowFeedbackUI {
+                NotificationCenter.default.post(name: Appero.kApperoFeedbackPromptNotification, object: nil)
+            }
         }
         currentData.feedbackUIStrings = response.feedbackUI ?? FeedbackUIStrings(
             title: Constants.defaultTitle,

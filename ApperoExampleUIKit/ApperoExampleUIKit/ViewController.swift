@@ -19,6 +19,13 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view.
         
         themePicker.selectedSegmentIndex = 0
+        
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(showApperoNotification(_:)),
+            name: Appero.kApperoFeedbackPromptNotification,
+            object: nil
+        )
     }
     
     @IBAction func changeTheme(sender: Any?) {
@@ -34,43 +41,36 @@ class ViewController: UIViewController {
 
     @IBAction func veryPositive(sender: Any?) {
         Appero.instance.log(experience: .strongPositive, context: "Very positive tapped")
-        if Appero.instance.shouldShowFeedbackPrompt {
-            openAppero()
-        }
     }
     
     @IBAction func positive(sender: Any?) {
         Appero.instance.log(experience: .strongPositive, context: "Positive tapped")
-        if Appero.instance.shouldShowFeedbackPrompt {
-            openAppero()
-        }
     }
     
     @IBAction func neutral(sender: Any?) {
         Appero.instance.log(experience: .strongPositive, context: "Neutral tapped")
-        if Appero.instance.shouldShowFeedbackPrompt {
-            openAppero()
-        }
     }
     
     @IBAction func negative(sender: Any?) {
         Appero.instance.log(experience: .strongPositive, context: "Negative tapped")
-        if Appero.instance.shouldShowFeedbackPrompt {
-            openAppero()
-        }
     }
     
     @IBAction func veryNegative(sender: Any?) {
         Appero.instance.log(experience: .strongPositive, context: "Very negative tapped")
-        if Appero.instance.shouldShowFeedbackPrompt {
-            openAppero()
-        }
     }
     
     @IBAction func triggerFeedbackPrompt(sender: Any?) {
         openAppero()
     }
     
+    // Show the Appero feedback prompt when the notification is triggered from the server response to posting an experience.
+    @objc func showApperoNotification(_: Notification) {
+        Task { @MainActor in
+            openAppero()
+        }
+    }
+    
+    // Present the Appero feedback UI in a SwiftUI hosting view controller
     func openAppero() {
         let apperoView = ApperoPresentationView() { [weak self] in
             

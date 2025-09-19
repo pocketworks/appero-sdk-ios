@@ -18,7 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         Appero.instance.reset()
         
         Appero.instance.start(
-            apiKey: "your api key",
+            apiKey: "PerD+p+Ciw2B9l6HuPucpLABI6wuLkiM2iwLPpDBYEw",
             userId: "test_user_1"
         )
         
