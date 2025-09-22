@@ -15,11 +15,13 @@ import StoreKit
 import Network
 import SwiftUI
 
-public class Appero {
+@objc public class Appero: NSObject, ObservableObject {
     
     struct Constants {
         static let kUserIdKey = "appero_user_id"
         static let kApperoDataFile = "ApperoData.json"
+        
+        static let kFeedbackMaxLength = 240
         
         static let defaultTitle = String(localized: "DefaultTitle", bundle: .appero)
         static let defaultSubtitle = String(localized: "DefaultSubtitle", bundle: .appero)
@@ -29,7 +31,10 @@ public class Appero {
         static let retryTimerInterval: TimeInterval = 180.0 // 3 minutes
     }
     
-    public enum ExperienceRating: Int, Codable {
+    /// Notification that is triggered when the feedback prompt should be shown, recommended for use in UIKit based apps
+    public static let kApperoFeedbackPromptNotification = Notification.Name("kApperoFeedbackPromptNotification")
+    
+    @objc public enum ExperienceRating: Int, CaseIterable, Codable {
         case strongPositive = 5
         case positive = 4
         case neutral = 3
@@ -37,7 +42,7 @@ public class Appero {
         case strongNegative = 1
     }
     
-    public struct Experience: Codable, Equatable {
+    internal struct Experience: Codable, Equatable {
         let date: Date
         let value: ExperienceRating
         let context: String?
@@ -47,7 +52,7 @@ public class Appero {
         }
     }
     
-    public struct QueuedFeedback: Codable, Equatable {
+    internal struct QueuedFeedback: Codable, Equatable {
         let date: Date
         let rating: Int
         let feedback: String?
@@ -99,16 +104,16 @@ public class Appero {
     }
     
     // config constants
-    public static let instance = Appero()
+    @objc public static let instance = Appero()
 
     // instance vars
     private var apiKey: String?
     
     /// an optional string to identify your user (uuid from your backend, account number, email address etc.)
-    var userId: String?
+    @objc public var userId: String?
     
     /// set to true to enable debug logging to the console
-    public var isDebug = false
+    @objc public var isDebug = false
     
     /// Specifies a delegate to handle analytics
     public var analyticsDelegate: ApperoAnalyticsDelegate?
@@ -118,14 +123,16 @@ public class Appero {
     
     // Network monitoring and retry timer
     private let networkMonitor = NWPathMonitor()
+    // TODO: move to async stream when we can drop iOS 16 support.
     private let networkQueue = DispatchQueue(label: "appero.network.monitor")
     private var retryTimer: Timer?
     private var isConnected = true
     
     /// For testing purposes - when set to true, forces offline queuing behavior regardless of actual network status
-    public var forceOfflineMode = false
+    @objc public var forceOfflineMode = false
     
-    private init() {
+    private override init() {
+        super.init()
         setupNetworkMonitoring()
         startRetryTimer()
     }
@@ -134,13 +141,13 @@ public class Appero {
     /// - Parameters:
     ///   - apiKey: your API key
     ///   - userId: optional user identifier, if none provided a UUID will be generated automatically
-    public func start(apiKey: String, userId: String?) {
+    @objc public func start(apiKey: String, userId: String?) {
         self.apiKey = apiKey
         self.userId = userId ?? generateOrRestoreUserId()
     }
     
     /// Generates a unique user ID that is cached in user defaults and subsequently returned on future calls.
-    public func generateOrRestoreUserId() -> String {
+    @objc public func generateOrRestoreUserId() -> String {
         if let existingId = UserDefaults.standard.string(forKey: Constants.kUserIdKey) {
             return existingId
         } else {
@@ -150,14 +157,8 @@ public class Appero {
         }
     }
     
-    public var shouldShowFeedbackPrompt: Bool {
-        get {
-            return data.feedbackPromptShouldDisplay
-        }
-        set {
-            data.feedbackPromptShouldDisplay = newValue
-        }
-    }
+    /// Indicates whether the feedback UI should be shown in your app
+    @objc @Published public var shouldShowFeedbackPrompt: Bool = false
     
     public var feedbackUIStrings: Appero.FeedbackUIStrings {
         get {
@@ -195,6 +196,9 @@ public class Appero {
         }
         set {
             saveApperoData(newValue)
+            Task { @MainActor in
+                shouldShowFeedbackPrompt = newValue.feedbackPromptShouldDisplay
+            }
         }
     }
     
@@ -217,6 +221,12 @@ public class Appero {
         } catch {
             ApperoDebug.log("Error saving ApperoData to file: \(error)")
         }
+    }
+    
+    /// Call this dismiss the feedback prompt and prevent it reappearing until we next get notified by the server to show it
+    @objc public func dismissApperoPrompt() {
+        shouldShowFeedbackPrompt = false
+        data.feedbackPromptShouldDisplay = false
     }
     
     /// Loads ApperoData from a JSON file
@@ -245,22 +255,14 @@ public class Appero {
     
     /// Sets up network path monitoring to track connectivity status
     private func setupNetworkMonitoring() {
+        
         networkMonitor.pathUpdateHandler = { [weak self] path in
-            DispatchQueue.main.async {
-                
+            Task { @MainActor in
                 guard let self = self else {
                     return
                 }
                 
                 self.isConnected = path.status == .satisfied && !self.forceOfflineMode
-                
-                // If we regain connectivity and have unsent experiences, try to send them immediately
-                if self.isConnected == true {
-                    Task {
-                        await self.processUnsentExperiences()
-                        await self.processUnsentFeedback()
-                    }
-                }
             }
         }
         networkMonitor.start(queue: networkQueue)
@@ -270,6 +272,7 @@ public class Appero {
     private func startRetryTimer() {
         retryTimer = Timer.scheduledTimer(withTimeInterval: Constants.retryTimerInterval, repeats: true) { [weak self] _ in
             Task {
+                ApperoDebug.log("Attempting to send queued experiences/feedback")
                 await self?.processUnsentExperiences()
                 await self?.processUnsentFeedback()
             }
@@ -288,7 +291,7 @@ public class Appero {
     /// - Parameters:
     ///   - experience: The experience rating
     ///   - context: Optional context string to provide additional information
-    public func log(experience: ExperienceRating, context: String? = nil) {
+    @objc public func log(experience: ExperienceRating, context: String? = nil) {
         let experienceRecord = Experience(date: Date(), value: experience, context: context)
         
         Task {
@@ -339,7 +342,7 @@ public class Appero {
                     "build_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
                 ]
                 
-                let data = try await ApperoAPIClient.sendRequest(
+                let response = try await ApperoAPIClient.sendRequest(
                     endPoint: "experiences",
                     fields: experienceData,
                     method: .post,
@@ -349,7 +352,7 @@ public class Appero {
                 ApperoDebug.log("Experience posted successfully")
                 
                 successfullyProcessed.append(experience)
-                handleExperienceResponse(response: try JSONDecoder().decode(ExperienceResponse.self, from: data))
+                handleExperienceResponse(response: try JSONDecoder().decode(ExperienceResponse.self, from: response))
                 
             } catch {
                 ApperoDebug.log("Failed to send queued experience \(index + 1)/\(currentData.unsentExperiences.count): \(error)")
@@ -394,7 +397,11 @@ public class Appero {
         for (index, feedback) in currentData.unsentFeedback.enumerated() {
             guard let apiKey = apiKey else {
                 ApperoDebug.log("Cannot process feedback - API key not set")
-                continue
+                return
+            }
+            guard let userId = userId else {
+                ApperoDebug.log("Cannot process feedback - user ID key not set")
+                return
             }
             
             do {
@@ -465,21 +472,23 @@ public class Appero {
             handleExperienceResponse(response: try JSONDecoder().decode(ExperienceResponse.self, from: data))
             
         } catch let error as ApperoAPIError {
-            ApperoDebug.log(" Failed to send experience - queuing for retry")
+            ApperoDebug.log("Failed to send experience - queuing for retry")
             
             switch error {
-            case .networkError(statusCode: let code):
+                case .serverMessage(response: let response):
+                    ApperoDebug.log(response?.description() ?? "Unknown")
+                case .networkError(statusCode: let code):
                     ApperoDebug.log("Network error \(code)")
-            case .noData:
+                case .noData:
                     ApperoDebug.log("No data received")
-            case .noResponse:
-                    ApperoDebug.log(" No response received")
+                case .noResponse:
+                    ApperoDebug.log("No response received")
             }
             
             queueExperience(experience)
             
         } catch {
-            ApperoDebug.log(" Unknown error sending experience - queuing for retry: \(error)")
+            ApperoDebug.log("Unknown error sending experience - queuing for retry: \(error)")
             queueExperience(experience)
         }
     }
@@ -490,6 +499,11 @@ public class Appero {
         guard let apiKey = apiKey, let clientId = userId else {
             ApperoDebug.log("Cannot send feedback - API key or client ID not set")
             queueFeedback(feedback)
+            return
+        }
+        
+        if let feedbackString = feedback.feedback, feedbackString.count > Constants.kFeedbackMaxLength {
+            ApperoDebug.log("Cannot send feedback - text exceeds maximum character count \(feedbackString.count) > \(Constants.kFeedbackMaxLength)")
             return
         }
         
@@ -521,6 +535,8 @@ public class Appero {
             ApperoDebug.log("Failed to send feedback - queuing for retry")
             
             switch error {
+                case .serverMessage(response: let response):
+                    ApperoDebug.log(response?.description() ?? "Unknown")
                 case .networkError(statusCode: let code):
                     ApperoDebug.log("Network error \(code)")
                 case .noData:
@@ -544,6 +560,9 @@ public class Appero {
         // We won't let subsequent responses flip the value here if we're currently due to show the UI
         if currentData.feedbackPromptShouldDisplay == false {
             currentData.feedbackPromptShouldDisplay = response.shouldShowFeedbackUI
+            if response.shouldShowFeedbackUI {
+                NotificationCenter.default.post(name: Appero.kApperoFeedbackPromptNotification, object: nil)
+            }
         }
         currentData.feedbackUIStrings = response.feedbackUI ?? FeedbackUIStrings(
             title: Constants.defaultTitle,
@@ -601,6 +620,8 @@ public class Appero {
             ApperoDebug.log("Error submitting feedback - queuing for retry")
             
             switch error {
+                case .serverMessage(response: let response):
+                    ApperoDebug.log(response?.description() ?? "Unknown")
                 case .networkError(statusCode: let code):
                     ApperoDebug.log("Network error \(code)")
                 case .noData:
@@ -622,7 +643,7 @@ public class Appero {
     // MARK: - Miscellaneous Functions
     
     /// Resets all local data (queued experiences, user ID etc). You might use this when the user logs out or when testing your integration, however in typical use it's not required.
-    public func reset() {
+    @objc public func reset() {
         // Clear user ID from UserDefaults
         UserDefaults.standard.removeObject(forKey: Constants.kUserIdKey)
         
@@ -642,7 +663,7 @@ public class Appero {
     }
     
     /// Convenience function for requesting an app store rating. We recommend letting Appero handle when this is called to maximise your chances of a positive rating.
-    public func requestAppStoreRating() {
+    @objc public func requestAppStoreRating() {
         #if os(macOS)
         SKStoreReviewController.requestReview()
         #else
