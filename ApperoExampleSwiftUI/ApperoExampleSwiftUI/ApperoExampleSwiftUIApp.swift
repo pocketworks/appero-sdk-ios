@@ -18,9 +18,6 @@ struct ApperoExampleSwiftUIApp: App {
     }
     
     init() {
-        
-        loadRocketSimConnect()
-        
         // For the demo app we want to reset things on each launch
         // You likely wouldn't want to do this in a real app
         Appero.instance.reset()
