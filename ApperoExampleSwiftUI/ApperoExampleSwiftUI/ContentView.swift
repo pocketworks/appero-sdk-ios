@@ -19,8 +19,8 @@ struct ContentView: View {
                 Text("Appero UI theme:")
                 Picker("", selection: $theme) {
                     Text("System").tag(0)
-                    Text("Light").tag(1)
-                    Text("Dark").tag(2)
+                    Text("Theme 1").tag(1)
+                    Text("Theme 2").tag(2)
                 }
                 .pickerStyle(.segmented)
                 .onChange(of: theme) { oldTag, newTag in
