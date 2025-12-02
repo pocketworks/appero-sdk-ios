@@ -8,7 +8,6 @@ import SwiftUI
 import UIKit
 
 /// Provides the Appero feedback UI within a view to be displayed inside a modal sheet
-@available(iOS 16.4, *)
 public struct ApperoFeedbackView: View {
     
     enum ApperoPanel {
@@ -17,7 +16,7 @@ public struct ApperoFeedbackView: View {
         case thanks
     }
     
-    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.dismiss) private var dismiss
     
     let strings: Appero.FeedbackUIStrings
     let usesSystemMaterial = Appero.instance.theme.usesSystemMaterial
@@ -26,7 +25,7 @@ public struct ApperoFeedbackView: View {
     @State private var flowType: Appero.FlowType
     @State private var rating: Int = 0
     @State private var showThanks: Bool = false
-    @State private var sheetContentHeight = CGFloat(0)
+    
     
     private let ratingDetent = PresentationDetent.height(UIFontMetrics.default.scaledValue(for: 200))
     private let feedbackDetent = PresentationDetent.fraction(UIFontMetrics.default.scaledValue(for: 0.5))
@@ -55,8 +54,12 @@ public struct ApperoFeedbackView: View {
     
     public var body: some View {
         if usesSystemMaterial {
-            feedbackBody
-                .presentationBackground(.regularMaterial)
+            if #available(iOS 16.4, *) {
+                feedbackBody
+                    .presentationBackground(.regularMaterial)
+            } else {
+                feedbackBody
+            }
         } else {
             feedbackBody
         }
@@ -69,7 +72,7 @@ public struct ApperoFeedbackView: View {
                     Spacer()
                     Button {
                         Appero.instance.dismissApperoPrompt()
-                        presentationMode.wrappedValue.dismiss() // required for UIKit integration
+                        dismiss() // required for UIKit integration
                     } label: {
                         Image(systemName: "xmark")
                             .tint(.gray)
@@ -82,7 +85,7 @@ public struct ApperoFeedbackView: View {
                 if showThanks {
                     ThanksView(rating: rating) {
                         Appero.instance.dismissApperoPrompt()
-                        presentationMode.wrappedValue.dismiss() // required for UIKit integration
+                        dismiss() // required for UIKit integration
                     }
                     .padding(.horizontal)
                 } else {
@@ -110,7 +113,7 @@ public struct ApperoFeedbackView: View {
                             NegativeFlowView(
                                 strings: Appero.instance.feedbackUIStrings,
                                 onCancel: {
-                                    presentationMode.wrappedValue.dismiss() // required for UIKit integration
+                                    dismiss() // required for UIKit integration
                                     Appero.instance.dismissApperoPrompt()
                                 },
                                 onSubmit: { feedback in
@@ -373,7 +376,6 @@ private struct RatingView: View {
 }
 
 /// Supports showing the Appero panel from UIKit in a hosting controller.
-@available(iOS 16.4, *)
 public struct ApperoPresentationView: View {
     
     let onDismiss: (()->())?

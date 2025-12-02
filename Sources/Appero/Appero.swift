@@ -125,6 +125,7 @@ import SwiftUI
     private let networkMonitor = NWPathMonitor()
     // TODO: move to async stream when we can drop iOS 16 support.
     private let networkQueue = DispatchQueue(label: "appero.network.monitor")
+    private let dataQueue = DispatchQueue(label: "appero.data.queue")
     private var retryTimer: Timer?
     private var isConnected = true
     
@@ -176,7 +177,7 @@ import SwiftUI
     private var data: ApperoData {
         get {
             // Try to load from file
-            if let savedData = loadApperoData() {
+            if let savedData = dataQueue.sync(execute: { loadApperoData() }) {
                 return savedData
             }
             
@@ -195,7 +196,9 @@ import SwiftUI
             )
         }
         set {
-            saveApperoData(newValue)
+            dataQueue.sync {
+                saveApperoData(newValue)
+            }
             Task { @MainActor in
                 shouldShowFeedbackPrompt = newValue.feedbackPromptShouldDisplay
             }
@@ -204,8 +207,28 @@ import SwiftUI
     
     /// Gets the file URL for the ApperoData JSON file in the documents directory
     private func getApperoDataFileURL() -> URL {
-        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        return documentsDirectory.appendingPathComponent(Constants.kApperoDataFile)
+        let applicationSupportDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let apperoDirectory = applicationSupportDirectory.appendingPathComponent("Appero", isDirectory: true)
+        
+        if FileManager.default.fileExists(atPath: apperoDirectory.path) == false {
+            do {
+                try FileManager.default.createDirectory(at: apperoDirectory, withIntermediateDirectories: true)
+            } catch {
+                ApperoDebug.log("Error creating Application Support directory: \(error)")
+            }
+        }
+        
+        // Exclude from iCloud backups
+        var directoryURL = apperoDirectory
+        var resourceValues = URLResourceValues()
+        resourceValues.isExcludedFromBackup = true
+        do {
+            try directoryURL.setResourceValues(resourceValues)
+        } catch {
+            ApperoDebug.log("Failed to set do-not-backup attribute: \(error)")
+        }
+        
+        return apperoDirectory.appendingPathComponent(Constants.kApperoDataFile)
     }
     
     /// Saves ApperoData to a JSON file
@@ -333,7 +356,7 @@ import SwiftUI
             }
             
             do {
-                let experienceData: [String: Any] = await [
+                let experienceData: [String: Any] = [
                     "user_id": clientId,
                     "date": experience.date.ISO8601Format(),
                     "value": experience.value.rawValue,
@@ -454,11 +477,11 @@ import SwiftUI
         
         do {
             let experienceData: [String: Any] = [
-                "client_id": clientId,
+                "user_id": clientId,
                 "sent_at": experience.date.ISO8601Format(),
                 "value": experience.value.rawValue,
                 "context": experience.context ?? "",
-                "source": await UIDevice.current.systemName,
+                "source": UIDevice.current.systemName,
                 "build_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
             ]
             
@@ -516,11 +539,11 @@ import SwiftUI
         
         do {
             let feedbackData: [String: Any] = [
-                "client_id": clientId,
-                "date": feedback.date.ISO8601Format(),
+                "user_id": clientId,
+                "sent_at": feedback.date.ISO8601Format(),
                 "rating": String(feedback.rating),
                 "feedback": feedback.feedback ?? "",
-                "source": await UIDevice.current.systemName,
+                "source": UIDevice.current.systemName,
                 "build_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
             ]
             
@@ -579,10 +602,10 @@ import SwiftUI
     /// Post user feedback to Appero.
     /// - Parameters:
     ///   - rating: A value between 1 and 5 inclusive.
-    ///   - feedback: Optional feedback supplied by the user. Maximum length of 500 characters
+    ///   - feedback: Optional feedback supplied by the user. Maximum length of 240 characters
     /// - Returns: Boolean indicating if the feedback supplied passed validation and successfully uploaded. On false, no data was sent to the API and validation possibly failed
     @discardableResult public func postFeedback(rating: Int, feedback: String?) async -> Bool {
-        guard 1...5 ~= rating, feedback?.count ?? 0 < 500 else {
+        guard 1...5 ~= rating, (feedback?.count ?? 0) <= Appero.Constants.kFeedbackMaxLength else {
             return false
         }
         
@@ -601,10 +624,17 @@ import SwiftUI
             return true // Return true since we've queued it successfully
         }
         
+        guard let userId = userId else {
+            ApperoDebug.log("Cannot send feedback - user ID not set")
+            queueFeedback(queuedFeedback)
+            return true // Return true since we've queued it successfully
+        }
+        
         do {
             try await ApperoAPIClient.sendRequest(
                 endPoint: "feedback",
                 fields: [
+                    "user_id": userId,
                     "sent_at": queuedFeedback.date.ISO8601Format(),
                     "feedback": queuedFeedback.feedback ?? "",
                     "source" : UIDevice.current.systemName,
