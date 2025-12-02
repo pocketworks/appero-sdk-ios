@@ -446,7 +446,7 @@ private struct ThanksView: View {
             Spacer()
             if rating > 3 {
                 Button {
-                    Appero.instance.requestAppStoreRating()
+                    ApperoUtilities.requestAppStoreRating()
                     onDismiss()
                 } label: {
                     HStack() {

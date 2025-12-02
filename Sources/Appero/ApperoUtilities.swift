@@ -1,4 +1,9 @@
 //
+import StoreKit
+#if canImport(UIKit)
+import UIKit
+#endif
+
 //  ApperoUtilities.swift
 //  Appero
 //
@@ -10,5 +15,17 @@ internal struct ApperoDebug {
         if Appero.instance.isDebug {
             print("[Appero] \(message)")
         }
+    }
+}
+
+public enum ApperoUtilities {
+    public static func requestAppStoreRating() {
+        #if os(macOS)
+        SKStoreReviewController.requestReview()
+        #else
+        if let scene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
+            SKStoreReviewController.requestReview(in: scene)
+        }
+        #endif
     }
 }
