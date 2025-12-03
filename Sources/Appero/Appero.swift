@@ -328,11 +328,12 @@ import UIKit
     private func startRetryTimer() {
         retryTimer = Timer.scheduledTimer(withTimeInterval: Constants.retryTimerInterval, repeats: true) { [weak self] _ in
             Task {
-                ApperoDebug.log("Attempting to send queued experiences/feedback")
+                ApperoDebug.log("Checking for queued experiences/feedback to send")
                 await self?.processUnsentExperiences()
                 await self?.processUnsentFeedback()
             }
         }
+        retryTimer?.fire() // trigger an initial fire on launch to clear out the queue
     }
     
     /// Stops the retry timer (useful for cleanup)
@@ -374,6 +375,7 @@ import UIKit
         let currentData = readDataSnapshot()
         
         guard currentData.unsentExperiences.isEmpty == false else {
+            ApperoDebug.log("No unsent experiences found")
             return // No experiences to process
         }
         
@@ -442,6 +444,7 @@ import UIKit
         let currentData = readDataSnapshot()
         
         guard currentData.unsentFeedback.isEmpty == false else {
+            ApperoDebug.log("No unsent feedback found")
             return // No feedback to process
         }
         
@@ -527,6 +530,7 @@ import UIKit
             )
             
             handleExperienceResponse(response: try JSONDecoder().decode(ExperienceResponse.self, from: data))
+            ApperoDebug.log("✅ Experience logged")
             
         } catch let error as ApperoAPIError {
             ApperoDebug.log("Failed to send experience - queuing for retry")
@@ -547,67 +551,6 @@ import UIKit
         } catch {
             ApperoDebug.log("Unknown error sending experience - queuing for retry: \(error)")
             queueExperience(experience)
-        }
-    }
-    
-    /// Sends feedback to the backend, queuing it if the request fails
-    /// - Parameter feedback: The feedback to send
-    private func postFeedback(_ feedback: QueuedFeedback) async {
-        guard let apiKey = apiKey, let clientId = userId else {
-            ApperoDebug.log("Cannot send feedback - API key or client ID not set")
-            queueFeedback(feedback)
-            return
-        }
-        
-        if let feedbackString = feedback.feedback, feedbackString.count > Constants.kFeedbackMaxLength {
-            ApperoDebug.log("Cannot send feedback - text exceeds maximum character count \(feedbackString.count) > \(Constants.kFeedbackMaxLength)")
-            return
-        }
-        
-        // Check basic connectivity before attempting to send
-        guard isConnected && !forceOfflineMode else {
-            ApperoDebug.log("No network connectivity - queuing feedback")
-            queueFeedback(feedback)
-            return
-        }
-        
-        do {
-            let systemName = await MainActor.run { UIDevice.current.systemName }
-            let feedbackData: [String: Any] = [
-                "user_id": clientId,
-                "sent_at": feedback.date.ISO8601Format(),
-                "rating": String(feedback.rating),
-                "feedback": feedback.feedback ?? "",
-                "source": systemName,
-                "build_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
-            ]
-            
-            _ = try await ApperoAPIClient.sendRequest(
-                endPoint: "feedback",
-                fields: feedbackData,
-                method: .post,
-                authorization: apiKey
-            )
-            
-        } catch let error as ApperoAPIError {
-            ApperoDebug.log("Failed to send feedback - queuing for retry")
-            
-            switch error {
-                case .serverMessage(response: let response):
-                    ApperoDebug.log(response?.description() ?? "Unknown")
-                case .networkError(statusCode: let code):
-                    ApperoDebug.log("Network error \(code)")
-                case .noData:
-                    ApperoDebug.log("No data received")
-                case .noResponse:
-                    ApperoDebug.log("No response received")
-            }
-            
-            queueFeedback(feedback)
-            
-        } catch {
-            ApperoDebug.log("Unknown error sending feedback - queuing for retry: \(error)")
-            queueFeedback(feedback)
         }
     }
     
@@ -681,6 +624,7 @@ import UIKit
                 method: .post,
                 authorization: apiKey
             )
+            ApperoDebug.log("✅ Appero Feedback sent")
             return true
         }
         catch let error as ApperoAPIError {

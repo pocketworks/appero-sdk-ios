@@ -12,17 +12,17 @@ import Appero
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
-        
-        // for the demo app we want to reset things on each launch, you likely wouldn't want to do this in a real app.
-        Appero.instance.reset()
-        
+         
         Appero.instance.start(
             apiKey: "your_api_key",
             userId: "test_user_1"
         )
         
-        Appero.instance.theme = DefaultTheme()  // set the theme to use for the Appero UI
+        // Show debug info in the console
+        Appero.instance.isDebug = true
+        
+        // set the theme to use for the Appero UI
+        Appero.instance.theme = DefaultTheme()
 
         return true
     }
