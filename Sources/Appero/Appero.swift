@@ -669,6 +669,9 @@ import UIKit
             ApperoDebug.log("Error deleting ApperoData file: \(error)")
         }
         
+        shouldShowFeedbackPrompt = false
+        data = defaultApperoData()
+        
         // Clear instance variables
         self.userId = nil
     }
