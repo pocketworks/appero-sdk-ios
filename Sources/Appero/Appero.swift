@@ -393,7 +393,7 @@ import UIKit
                 let systemName = await MainActor.run { UIDevice.current.systemName }
                 let experienceData: [String: Any] = [
                     "user_id": clientId,
-                    "sent_at": experience.date.ISO8601Format(),
+                    "date": experience.date.ISO8601Format(),
                     "value": experience.value.rawValue,
                     "context": experience.context ?? "",
                     "source": systemName,
@@ -515,7 +515,7 @@ import UIKit
             let systemName = await MainActor.run { UIDevice.current.systemName }
             let experienceData: [String: Any] = [
                 "user_id": clientId,
-                "sent_at": experience.date.ISO8601Format(),
+                "date": experience.date.ISO8601Format(),
                 "value": experience.value.rawValue,
                 "context": experience.context ?? "",
                 "source": systemName,
