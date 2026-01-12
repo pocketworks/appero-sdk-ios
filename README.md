@@ -17,7 +17,7 @@ https://github.com/pocketworks/appero-sdk-ios
 
 __Important:__ If your app isn't localised or doesn't include an English localisation, please add `CFBundleAllowMixedLocalizations` to your info.plist and set its value to `true` or text in the Appero UI may not appear correctly. We're hoping to add more localisations to Appero in future releases.
 
-Appero caches experiences and feedback that have been logged to a json file, so that in the event that the user's device is offline or a network request fails, we don't lose any data. Appero will attempt to resend this data later when the connection is restored. The json file is stored in your app's documents directory. The file can be cleared using `Appero.instance.reset()`, you may want to call this in the event that a user logs out or deletes their account in your app. The user ID supplied to Appero is also cached, however for that we store it in UserDefaults. This allows us to persist the automatic UUID we generate to identify users for cases where a custom user ID has not been specified. We would recommend in most cases where you have an app with some kind of accounts feature, to use a common ID between your backend, Appero and any other analytics services to make it easier to manage your data and protect user privacy.
+Appero caches experiences and feedback that have been logged to a json file, so that in the event that the user's device is offline or a network request fails, we don't lose any data. Appero will attempt to resend this data later when the connection is restored. The json file is stored in your app's Application Support directory (excluded from iCloud backups). The file can be cleared using `Appero.instance.reset()`, you may want to call this in the event that a user logs out or deletes their account in your app. The user ID supplied to Appero is also cached, however for that we store it in UserDefaults. This allows us to persist the automatic UUID we generate to identify users for cases where a custom user ID has not been specified. We would recommend in most cases where you have an app with some kind of accounts feature, to use a common ID between your backend, Appero and any other analytics services to make it easier to manage your data and protect user privacy.
 
 ## Getting Started
 
@@ -100,7 +100,7 @@ override func viewDidLoad() {
 
 @objc func showApperoNotification(_: Notification) {
     Task { @MainActor in
-        func showAppero()
+        self.showAppero()
     }
 }
 ```
@@ -138,9 +138,9 @@ func showAppero() {
 }
 ```
 
-## Basic Themeing of the UI
+## Basic Theming of the UI
 
-Appero by default uses the standard iOS system colours and responds to changes to the appearance as the rest of the system dose, supporting light and dark mode. Appero also comes supplied with a light and dark theme, these both have a fixed colour palette that doesn't change in response to system appearance changes.
+Appero by default uses the standard iOS system colours and responds to changes to the appearance as the rest of the system does, supporting light and dark mode. Appero also comes supplied with a light and dark theme, these both have a fixed colour palette that doesn't change in response to system appearance changes.
 
 You will likely wish to create your own theme so the Appero UI respects your app's branding. This is done by adopting the `ApperoTheme` protocol on your custom theme struct which defines the colours you need to provide. The theme can then by applied by setting the theme property on the Appero instance as below.
 

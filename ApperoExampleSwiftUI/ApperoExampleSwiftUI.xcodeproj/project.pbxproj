@@ -7,12 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		9868C89B2E81658400488000 /* Appero in Frameworks */ = {isa = PBXBuildFile; productRef = 9868C89A2E81658400488000 /* Appero */; };
+		987260032EDF26EE00279B0C /* Appero in Frameworks */ = {isa = PBXBuildFile; productRef = 987260022EDF26EE00279B0C /* Appero */; };
 		98729B5D2C014305007227F6 /* ApperoExampleSwiftUIApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98729B5C2C014305007227F6 /* ApperoExampleSwiftUIApp.swift */; };
 		98729B612C014305007227F6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 98729B602C014305007227F6 /* Assets.xcassets */; };
 		98729B642C014305007227F6 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 98729B632C014305007227F6 /* Preview Assets.xcassets */; };
 		988B10312E7344F3002924AE /* Appero in Frameworks */ = {isa = PBXBuildFile; productRef = 988B10302E7344F3002924AE /* Appero */; };
-		988B10342E73460E002924AE /* Appero in Frameworks */ = {isa = PBXBuildFile; productRef = 988B10332E73460E002924AE /* Appero */; };
 		989043962C05CF6A00EB4375 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98729B5E2C014305007227F6 /* ContentView.swift */; };
 		98B7FB962DECF81C00C6FA74 /* Appero in Frameworks */ = {isa = PBXBuildFile; productRef = 98B7FB952DECF81C00C6FA74 /* Appero */; };
 		98EE6E9A2E7962A8009CE0D0 /* Appero in Frameworks */ = {isa = PBXBuildFile; productRef = 98EE6E992E7962A8009CE0D0 /* Appero */; };
@@ -32,9 +31,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9868C89B2E81658400488000 /* Appero in Frameworks */,
-				988B10342E73460E002924AE /* Appero in Frameworks */,
 				98EE6E9A2E7962A8009CE0D0 /* Appero in Frameworks */,
+				987260032EDF26EE00279B0C /* Appero in Frameworks */,
 				98B7FB962DECF81C00C6FA74 /* Appero in Frameworks */,
 				988B10312E7344F3002924AE /* Appero in Frameworks */,
 			);
@@ -100,9 +98,8 @@
 			packageProductDependencies = (
 				98B7FB952DECF81C00C6FA74 /* Appero */,
 				988B10302E7344F3002924AE /* Appero */,
-				988B10332E73460E002924AE /* Appero */,
 				98EE6E992E7962A8009CE0D0 /* Appero */,
-				9868C89A2E81658400488000 /* Appero */,
+				987260022EDF26EE00279B0C /* Appero */,
 			);
 			productName = ApperoExampleSwiftUI;
 			productReference = 98729B592C014305007227F6 /* ApperoExampleSwiftUI.app */;
@@ -133,7 +130,7 @@
 			);
 			mainGroup = 98729B502C014305007227F6;
 			packageReferences = (
-				9868C8992E81658400488000 /* XCLocalSwiftPackageReference "../../appero-sdk-ios" */,
+				987260012EDF26EE00279B0C /* XCLocalSwiftPackageReference "../../appero-sdk-ios" */,
 			);
 			productRefGroup = 98729B5A2C014305007227F6 /* Products */;
 			projectDirPath = "";
@@ -374,22 +371,18 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		9868C8992E81658400488000 /* XCLocalSwiftPackageReference "../../appero-sdk-ios" */ = {
+		987260012EDF26EE00279B0C /* XCLocalSwiftPackageReference "../../appero-sdk-ios" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "../../appero-sdk-ios";
 		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		9868C89A2E81658400488000 /* Appero */ = {
+		987260022EDF26EE00279B0C /* Appero */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Appero;
 		};
 		988B10302E7344F3002924AE /* Appero */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = Appero;
-		};
-		988B10332E73460E002924AE /* Appero */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Appero;
 		};

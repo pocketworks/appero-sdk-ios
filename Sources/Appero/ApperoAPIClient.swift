@@ -13,15 +13,6 @@ enum ApperoAPIError: Error {
     case noResponse
 }
 
-enum FlowType: String, Codable {
-    /// indicates a positive overall experience
-    case normal = "normal"
-    /// indicates neither a positive or negative overall experience
-    case neutral = "neutral"
-    /// indicates a negative overall experience
-    case frustration = "frustration"
-}
-
 struct ApperoErrorResponse: Codable {
     
     struct Details: Codable {
