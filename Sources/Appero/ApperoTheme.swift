@@ -138,19 +138,19 @@ public struct LightTheme: ApperoTheme {
     }
     
     public var headingFont: Font {
-        return Font.custom("Helvetica-Bold", size: 18, relativeTo: .headline)
+        return Font.custom("AvenirNext-Bold", size: 18, relativeTo: .headline)
     }
     
     public var bodyFont: Font {
-        return Font.custom("Helvetica", size: 16, relativeTo: .body)
+        return Font.custom("AvenirNext-Medium", size: 16, relativeTo: .body)
     }
     
     public var buttonFont: Font {
-        return Font.custom("Helvetica-Bold", size: 16, relativeTo: .body)
+        return Font.custom("AvenirNext-Medium", size: 16, relativeTo: .body)
     }
     
     public var captionFont: Font {
-        return Font.custom("Helvetica", size: 14, relativeTo: .caption)
+        return Font.custom("AvenirNext-Regular", size: 14, relativeTo: .caption)
     }
     
     public var usesSystemMaterial: Bool {
@@ -160,15 +160,15 @@ public struct LightTheme: ApperoTheme {
     public func imageFor(rating: ApperoRating) -> Image {
         switch rating {
             case .veryPoor:
-                return Image("rating1", bundle: .appero)
+                return Image("rating1-alt2", bundle: .appero)
             case .poor:
-                return Image("rating2", bundle: .appero)
+                return Image("rating2-alt2", bundle: .appero)
             case .average:
-                return Image("rating3", bundle: .appero)
+                return Image("rating3-alt2", bundle: .appero)
             case .good:
-                return Image("rating4", bundle: .appero)
+                return Image("rating4-alt2", bundle: .appero)
             case .veryGood:
-                return Image("rating5", bundle: .appero)
+                return Image("rating5-alt2", bundle: .appero)
         }
     }
 }

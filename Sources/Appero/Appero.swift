@@ -14,6 +14,9 @@ import Foundation
 import StoreKit
 import Network
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 @objc public class Appero: NSObject, ObservableObject {
     
@@ -125,6 +128,7 @@ import SwiftUI
     private let networkMonitor = NWPathMonitor()
     // TODO: move to async stream when we can drop iOS 16 support.
     private let networkQueue = DispatchQueue(label: "appero.network.monitor")
+    private let dataQueue = DispatchQueue(label: "appero.data.queue")
     private var retryTimer: Timer?
     private var isConnected = true
     
@@ -176,36 +180,86 @@ import SwiftUI
     private var data: ApperoData {
         get {
             // Try to load from file
-            if let savedData = loadApperoData() {
+            if let savedData = dataQueue.sync(execute: { loadApperoData() }) {
                 return savedData
             }
             
             // Return default ApperoData if none exists
-            return ApperoData(
-                unsentExperiences: [],
-                unsentFeedback: [],
-                feedbackPromptShouldDisplay: false,
-                feedbackUIStrings: FeedbackUIStrings(
-                    title: Constants.defaultTitle,
-                    subtitle: Constants.defaultSubtitle,
-                    prompt: Constants.defaultPrompt
-                ),
-                lastPromptDate: nil,
-                flowType: .neutral
-            )
+            return defaultApperoData()
         }
         set {
-            saveApperoData(newValue)
+            dataQueue.sync {
+                saveApperoData(newValue)
+            }
             Task { @MainActor in
                 shouldShowFeedbackPrompt = newValue.feedbackPromptShouldDisplay
             }
         }
     }
     
+    /// Returns a default-initialized ApperoData value
+    private func defaultApperoData() -> ApperoData {
+        return ApperoData(
+            unsentExperiences: [],
+            unsentFeedback: [],
+            feedbackPromptShouldDisplay: false,
+            feedbackUIStrings: FeedbackUIStrings(
+                title: Constants.defaultTitle,
+                subtitle: Constants.defaultSubtitle,
+                prompt: Constants.defaultPrompt
+            ),
+            lastPromptDate: nil,
+            flowType: .neutral
+        )
+    }
+    
+    /// Atomically reads current data snapshot from disk
+    private func readDataSnapshot() -> ApperoData {
+        return dataQueue.sync {
+            if let saved = loadApperoData() {
+                return saved
+            } else {
+                return defaultApperoData()
+            }
+        }
+    }
+    
+    /// Serializes a mutation of the file-backed state to avoid read-modify-write races
+    private func mutateData(_ mutate: (inout ApperoData) -> Void) {
+        dataQueue.sync {
+            var current = loadApperoData() ?? defaultApperoData()
+            mutate(&current)
+            saveApperoData(current)
+            Task { @MainActor in
+                shouldShowFeedbackPrompt = current.feedbackPromptShouldDisplay
+            }
+        }
+    }
+    
     /// Gets the file URL for the ApperoData JSON file in the documents directory
     private func getApperoDataFileURL() -> URL {
-        let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        return documentsDirectory.appendingPathComponent(Constants.kApperoDataFile)
+        let applicationSupportDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let apperoDirectory = applicationSupportDirectory.appendingPathComponent("Appero", isDirectory: true)
+        
+        if FileManager.default.fileExists(atPath: apperoDirectory.path) == false {
+            do {
+                try FileManager.default.createDirectory(at: apperoDirectory, withIntermediateDirectories: true)
+            } catch {
+                ApperoDebug.log("Error creating Application Support directory: \(error)")
+            }
+        }
+        
+        // Exclude from iCloud backups
+        var directoryURL = apperoDirectory
+        var resourceValues = URLResourceValues()
+        resourceValues.isExcludedFromBackup = true
+        do {
+            try directoryURL.setResourceValues(resourceValues)
+        } catch {
+            ApperoDebug.log("Failed to set do-not-backup attribute: \(error)")
+        }
+        
+        return apperoDirectory.appendingPathComponent(Constants.kApperoDataFile)
     }
     
     /// Saves ApperoData to a JSON file
@@ -226,7 +280,9 @@ import SwiftUI
     /// Call this dismiss the feedback prompt and prevent it reappearing until we next get notified by the server to show it
     @objc public func dismissApperoPrompt() {
         shouldShowFeedbackPrompt = false
-        data.feedbackPromptShouldDisplay = false
+        mutateData { data in
+            data.feedbackPromptShouldDisplay = false
+        }
     }
     
     /// Loads ApperoData from a JSON file
@@ -272,11 +328,12 @@ import SwiftUI
     private func startRetryTimer() {
         retryTimer = Timer.scheduledTimer(withTimeInterval: Constants.retryTimerInterval, repeats: true) { [weak self] _ in
             Task {
-                ApperoDebug.log("Attempting to send queued experiences/feedback")
+                ApperoDebug.log("Checking for queued experiences/feedback to send")
                 await self?.processUnsentExperiences()
                 await self?.processUnsentFeedback()
             }
         }
+        retryTimer?.fire() // trigger an initial fire on launch to clear out the queue
     }
     
     /// Stops the retry timer (useful for cleanup)
@@ -302,11 +359,10 @@ import SwiftUI
     /// Adds an experience to the unsent queue
     /// - Parameter experience: The experience to queue
     private func queueExperience(_ experience: Experience) {
-        var currentData = data
-        currentData.unsentExperiences.append(experience)
-        data = currentData
-        
-        ApperoDebug.log("Queued experience for retry. Total queued: \(currentData.unsentExperiences.count)")
+        mutateData { data in
+            data.unsentExperiences.append(experience)
+        }
+        ApperoDebug.log("Queued experience for retry.")
     }
     
     /// Processes all queued experiences, attempting to send them to the backend
@@ -316,9 +372,10 @@ import SwiftUI
             return
         }
         
-        var currentData = data
+        let currentData = readDataSnapshot()
         
         guard currentData.unsentExperiences.isEmpty == false else {
+            ApperoDebug.log("No unsent experiences found")
             return // No experiences to process
         }
         
@@ -333,12 +390,13 @@ import SwiftUI
             }
             
             do {
-                let experienceData: [String: Any] = await [
+                let systemName = await MainActor.run { UIDevice.current.systemName }
+                let experienceData: [String: Any] = [
                     "user_id": clientId,
                     "date": experience.date.ISO8601Format(),
                     "value": experience.value.rawValue,
                     "context": experience.context ?? "",
-                    "source": UIDevice.current.systemName,
+                    "source": systemName,
                     "build_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
                 ]
                 
@@ -360,21 +418,20 @@ import SwiftUI
             
         }
         
-        currentData.unsentExperiences.removeAll { experience in
-            successfullyProcessed.contains(experience)
+        mutateData { data in
+            data.unsentExperiences.removeAll { experience in
+                successfullyProcessed.contains(experience)
+            }
         }
-        
-        data = currentData
     }
     
     /// Adds feedback to the unsent queue
     /// - Parameter feedback: The feedback to queue
     private func queueFeedback(_ feedback: QueuedFeedback) {
-        var currentData = data
-        currentData.unsentFeedback.append(feedback)
-        data = currentData
-        
-        ApperoDebug.log("Queued feedback for retry. Total queued: \(currentData.unsentFeedback.count)")
+        mutateData { data in
+            data.unsentFeedback.append(feedback)
+        }
+        ApperoDebug.log("Queued feedback for retry.")
     }
     
     /// Processes all queued feedback, attempting to send them to the backend
@@ -384,9 +441,10 @@ import SwiftUI
             return
         }
         
-        var currentData = data
+        let currentData = readDataSnapshot()
         
         guard currentData.unsentFeedback.isEmpty == false else {
+            ApperoDebug.log("No unsent feedback found")
             return // No feedback to process
         }
         
@@ -405,13 +463,14 @@ import SwiftUI
             }
             
             do {
+                let systemName = await MainActor.run { UIDevice.current.systemName }
                 try await ApperoAPIClient.sendRequest(
                     endPoint: "feedback",
                     fields: [
                         "user_id": userId,
                         "sent_at": feedback.date.ISO8601Format(),
                         "feedback": feedback.feedback ?? "",
-                        "source" : UIDevice.current.systemName,
+                        "source" : systemName,
                         "build_version" : Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "n/a",
                         "rating": String(feedback.rating)
                     ],
@@ -429,11 +488,11 @@ import SwiftUI
         }
         
         // Remove successfully processed feedback from the queue
-        currentData.unsentFeedback.removeAll { feedback in
-            successfullyProcessed.contains(feedback)
+        mutateData { data in
+            data.unsentFeedback.removeAll { feedback in
+                successfullyProcessed.contains(feedback)
+            }
         }
-        
-        data = currentData
     }
 
     /// Sends an experience to the backend, queuing it if the request fails
@@ -453,12 +512,13 @@ import SwiftUI
         }
         
         do {
+            let systemName = await MainActor.run { UIDevice.current.systemName }
             let experienceData: [String: Any] = [
-                "client_id": clientId,
-                "sent_at": experience.date.ISO8601Format(),
+                "user_id": clientId,
+                "date": experience.date.ISO8601Format(),
                 "value": experience.value.rawValue,
                 "context": experience.context ?? "",
-                "source": await UIDevice.current.systemName,
+                "source": systemName,
                 "build_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
             ]
             
@@ -470,6 +530,7 @@ import SwiftUI
             )
             
             handleExperienceResponse(response: try JSONDecoder().decode(ExperienceResponse.self, from: data))
+            ApperoDebug.log("✅ Experience logged")
             
         } catch let error as ApperoAPIError {
             ApperoDebug.log("Failed to send experience - queuing for retry")
@@ -493,85 +554,26 @@ import SwiftUI
         }
     }
     
-    /// Sends feedback to the backend, queuing it if the request fails
-    /// - Parameter feedback: The feedback to send
-    private func postFeedback(_ feedback: QueuedFeedback) async {
-        guard let apiKey = apiKey, let clientId = userId else {
-            ApperoDebug.log("Cannot send feedback - API key or client ID not set")
-            queueFeedback(feedback)
-            return
-        }
-        
-        if let feedbackString = feedback.feedback, feedbackString.count > Constants.kFeedbackMaxLength {
-            ApperoDebug.log("Cannot send feedback - text exceeds maximum character count \(feedbackString.count) > \(Constants.kFeedbackMaxLength)")
-            return
-        }
-        
-        // Check basic connectivity before attempting to send
-        guard isConnected && !forceOfflineMode else {
-            ApperoDebug.log("No network connectivity - queuing feedback")
-            queueFeedback(feedback)
-            return
-        }
-        
-        do {
-            let feedbackData: [String: Any] = [
-                "client_id": clientId,
-                "date": feedback.date.ISO8601Format(),
-                "rating": String(feedback.rating),
-                "feedback": feedback.feedback ?? "",
-                "source": await UIDevice.current.systemName,
-                "build_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
-            ]
-            
-            _ = try await ApperoAPIClient.sendRequest(
-                endPoint: "feedback",
-                fields: feedbackData,
-                method: .post,
-                authorization: apiKey
-            )
-            
-        } catch let error as ApperoAPIError {
-            ApperoDebug.log("Failed to send feedback - queuing for retry")
-            
-            switch error {
-                case .serverMessage(response: let response):
-                    ApperoDebug.log(response?.description() ?? "Unknown")
-                case .networkError(statusCode: let code):
-                    ApperoDebug.log("Network error \(code)")
-                case .noData:
-                    ApperoDebug.log("No data received")
-                case .noResponse:
-                    ApperoDebug.log("No response received")
-            }
-            
-            queueFeedback(feedback)
-            
-        } catch {
-            ApperoDebug.log("Unknown error sending feedback - queuing for retry: \(error)")
-            queueFeedback(feedback)
-        }
-    }
-    
     private func handleExperienceResponse(response: ExperienceResponse) {
         
-        var currentData = data
+        let snapshot = readDataSnapshot()
         
         // We won't let subsequent responses flip the value here if we're currently due to show the UI
-        if currentData.feedbackPromptShouldDisplay == false {
-            currentData.feedbackPromptShouldDisplay = response.shouldShowFeedbackUI
-            if response.shouldShowFeedbackUI {
-                NotificationCenter.default.post(name: Appero.kApperoFeedbackPromptNotification, object: nil)
-            }
+        if snapshot.feedbackPromptShouldDisplay == false && response.shouldShowFeedbackUI {
+            NotificationCenter.default.post(name: Appero.kApperoFeedbackPromptNotification, object: nil)
         }
-        currentData.feedbackUIStrings = response.feedbackUI ?? FeedbackUIStrings(
-            title: Constants.defaultTitle,
-            subtitle: Constants.defaultSubtitle,
-            prompt: Constants.defaultPrompt
-        )
-        currentData.flowType = response.flowType
         
-        data = currentData
+        mutateData { data in
+            if data.feedbackPromptShouldDisplay == false {
+                data.feedbackPromptShouldDisplay = response.shouldShowFeedbackUI
+            }
+            data.feedbackUIStrings = response.feedbackUI ?? FeedbackUIStrings(
+                title: Constants.defaultTitle,
+                subtitle: Constants.defaultSubtitle,
+                prompt: Constants.defaultPrompt
+            )
+            data.flowType = response.flowType
+        }
     }
     
     // MARK: - API Calls
@@ -579,10 +581,10 @@ import SwiftUI
     /// Post user feedback to Appero.
     /// - Parameters:
     ///   - rating: A value between 1 and 5 inclusive.
-    ///   - feedback: Optional feedback supplied by the user. Maximum length of 500 characters
+    ///   - feedback: Optional feedback supplied by the user. Maximum length of 240 characters
     /// - Returns: Boolean indicating if the feedback supplied passed validation and successfully uploaded. On false, no data was sent to the API and validation possibly failed
     @discardableResult public func postFeedback(rating: Int, feedback: String?) async -> Bool {
-        guard 1...5 ~= rating, feedback?.count ?? 0 < 500 else {
+        guard 1...5 ~= rating, (feedback?.count ?? 0) <= Appero.Constants.kFeedbackMaxLength else {
             return false
         }
         
@@ -601,19 +603,28 @@ import SwiftUI
             return true // Return true since we've queued it successfully
         }
         
+        guard let userId = userId else {
+            ApperoDebug.log("Cannot send feedback - user ID not set")
+            queueFeedback(queuedFeedback)
+            return true // Return true since we've queued it successfully
+        }
+        
         do {
+            let systemName = await MainActor.run { UIDevice.current.systemName }
             try await ApperoAPIClient.sendRequest(
                 endPoint: "feedback",
                 fields: [
+                    "user_id": userId,
                     "sent_at": queuedFeedback.date.ISO8601Format(),
                     "feedback": queuedFeedback.feedback ?? "",
-                    "source" : UIDevice.current.systemName,
+                    "source" : systemName,
                     "build_version" : Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "n/a",
                     "rating": String(queuedFeedback.rating)
                 ],
                 method: .post,
                 authorization: apiKey
             )
+            ApperoDebug.log("✅ Appero Feedback sent")
             return true
         }
         catch let error as ApperoAPIError {
@@ -658,19 +669,11 @@ import SwiftUI
             ApperoDebug.log("Error deleting ApperoData file: \(error)")
         }
         
+        shouldShowFeedbackPrompt = false
+        data = defaultApperoData()
+        
         // Clear instance variables
         self.userId = nil
-    }
-    
-    /// Convenience function for requesting an app store rating. We recommend letting Appero handle when this is called to maximise your chances of a positive rating.
-    @objc public func requestAppStoreRating() {
-        #if os(macOS)
-        SKStoreReviewController.requestReview()
-        #else
-        if let scene = UIApplication.shared.connectedScenes.first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene {
-            SKStoreReviewController.requestReview(in: scene)
-        }
-        #endif
     }
     
     deinit {
