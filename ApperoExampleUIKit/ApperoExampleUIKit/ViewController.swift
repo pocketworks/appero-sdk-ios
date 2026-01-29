@@ -44,19 +44,19 @@ class ViewController: UIViewController {
     }
     
     @IBAction func positive(sender: Any?) {
-        Appero.instance.log(experience: .strongPositive, context: "Positive tapped")
+        Appero.instance.log(experience: .positive, context: "Positive tapped")
     }
     
     @IBAction func neutral(sender: Any?) {
-        Appero.instance.log(experience: .strongPositive, context: "Neutral tapped")
+        Appero.instance.log(experience: .neutral, context: "Neutral tapped")
     }
     
     @IBAction func negative(sender: Any?) {
-        Appero.instance.log(experience: .strongPositive, context: "Negative tapped")
+        Appero.instance.log(experience: .negative, context: "Negative tapped")
     }
     
     @IBAction func veryNegative(sender: Any?) {
-        Appero.instance.log(experience: .strongPositive, context: "Very negative tapped")
+        Appero.instance.log(experience: .strongNegative, context: "Very negative tapped")
     }
     
     @IBAction func triggerFeedbackPrompt(sender: Any?) {

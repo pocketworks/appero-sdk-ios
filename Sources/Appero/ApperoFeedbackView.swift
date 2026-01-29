@@ -105,7 +105,7 @@ public struct ApperoFeedbackView: View {
                                 self.rating = rating
                                 self.showThanks = true
                                 selectedPanelHeight = rating > 3 ? thanksDetent : ratingDetent
-                                Appero.instance.shouldShowFeedbackPrompt = false
+                                
                             })
                             .padding(.horizontal)
                             
