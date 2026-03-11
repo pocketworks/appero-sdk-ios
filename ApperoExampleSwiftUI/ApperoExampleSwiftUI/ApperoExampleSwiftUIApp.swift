@@ -20,7 +20,7 @@ struct ApperoExampleSwiftUIApp: App {
     init() {
 
         Appero.instance.start(
-            apiKey: "your_api_key",
+            apiKey: "PerD+p+Ciw2B9l6HuPucpLABI6wuLkiM2iwLPpDBYEw",
             userId: "test_user_1"
         )
         
