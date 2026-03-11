@@ -420,14 +420,7 @@ private struct ThanksView: View {
     }
     
     var title: String {
-        switch rating {
-            case 1...3:
-                return String(localized: "ThankYouTitle", bundle: .appero)
-            case 4...5:
-                return String(localized: "RateUsTitle", bundle: .appero)
-            default:
-                return "Unexpected state"
-        }
+        return String(localized: "ThankYouTitle", bundle: .appero)
     }
 
     var body: some View {
@@ -444,42 +437,20 @@ private struct ThanksView: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Appero.instance.theme.primaryTextColor)
             Spacer()
-            if rating > 3 {
-                Button {
+            Button {
+                if rating > 3 {
                     ApperoUtilities.requestAppStoreRating()
-                    onDismiss()
-                } label: {
-                    HStack() {
-                        Spacer()
-                        Text(String(localized: "Rate", bundle: .appero))
-                        Spacer()
-                    }
                 }
-                .buttonStyle(ApperoButtonStyle())
-                Button {
-                    onDismiss()
-                } label: {
-                    HStack() {
-                        Spacer()
-                        Text(String(localized: "NotNow", bundle: .appero))
-                        Spacer()
-                    }
+                onDismiss()
+            } label: {
+                HStack() {
+                    Spacer()
+                    Text(String(localized: "Done", bundle: .appero))
+                    Spacer()
                 }
-                .buttonStyle(ApperoTextButtonStyle())
-                .padding(EdgeInsets(top: 0, leading: 0, bottom: 20, trailing: 0))
-            } else {
-                Button {
-                    onDismiss()
-                } label: {
-                    HStack() {
-                        Spacer()
-                        Text(String(localized: "Done", bundle: .appero))
-                        Spacer()
-                    }
-                }
-                .buttonStyle(ApperoButtonStyle())
-                .padding(EdgeInsets(top: 0, leading: 0, bottom: 20, trailing: 0))
             }
+            .buttonStyle(ApperoButtonStyle())
+            .padding(EdgeInsets(top: 0, leading: 0, bottom: 20, trailing: 0))
         }
         .frame(maxWidth: .infinity)
     }
