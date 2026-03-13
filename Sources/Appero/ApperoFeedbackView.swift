@@ -426,16 +426,17 @@ private struct ThanksView: View {
     var body: some View {
         VStack() {
             Text(title)
-                .font(.headline)
+                .font(Appero.instance.theme.headingFont)
+                .foregroundColor(Appero.instance.theme.primaryTextColor)
                 .lineLimit(2)
                 .padding(.horizontal)
-                .foregroundStyle(Appero.instance.theme.primaryTextColor)
+                .multilineTextAlignment(.center)
             Spacer()
             Text(message)
+                .font(Appero.instance.theme.bodyFont)
+                .foregroundColor(Appero.instance.theme.primaryTextColor)
                 .padding(.horizontal)
-                //.lineLimit(3)
                 .multilineTextAlignment(.center)
-                .foregroundStyle(Appero.instance.theme.primaryTextColor)
             Spacer()
             Button {
                 if rating > 3 {
@@ -446,6 +447,8 @@ private struct ThanksView: View {
                 HStack() {
                     Spacer()
                     Text(String(localized: "Done", bundle: .appero))
+                        .font(Appero.instance.theme.buttonFont)
+                        .foregroundStyle(Appero.instance.theme.buttonTextColor)
                     Spacer()
                 }
             }
